@@ -9,6 +9,7 @@ export interface AppEvent {
   description: string;
   imgUrl: string;
   status: "pending" | "approved" | "rejected";
+  auto_approve: boolean;
   reviewedBy?: number;
   ReviewedAt?: string;
   createdAt: string;
@@ -24,4 +25,5 @@ export interface CreateEventDTO {
   capacity: number;
   description: string;
   img_url: string;
+  auto_approve: boolean;
 }

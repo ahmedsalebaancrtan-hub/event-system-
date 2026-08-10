@@ -19,7 +19,7 @@ export const UpdateEvent = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [formData, setFormData] = useState<Partial<AppEvent>>({
-    title: "", type: "CONFERENCE", location: "", capacity: 0, description: "", imgUrl: ""
+    title: "", type: "CONFERENCE", location: "", capacity: 0, description: "", imgUrl: "", auto_approve: false
   });
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
@@ -34,6 +34,7 @@ export const UpdateEvent = () => {
         title: selectedEvent.title, type: selectedEvent.type,
         location: selectedEvent.location, capacity: selectedEvent.capacity,
         description: selectedEvent.description, imgUrl: selectedEvent.imgUrl,
+        auto_approve: Boolean(selectedEvent.auto_approve),
       });
       if (selectedEvent.startTime) setStartTime(new Date(selectedEvent.startTime).toISOString().slice(0, 16));
       if (selectedEvent.endTime) setEndTime(new Date(selectedEvent.endTime).toISOString().slice(0, 16));
@@ -41,8 +42,9 @@ export const UpdateEvent = () => {
   }, [selectedEvent]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: name === "capacity" ? parseInt(value) || 0 : value }));
+    const { name, value, type } = e.target;
+    const checked = e.target instanceof HTMLInputElement ? e.target.checked : false;
+    setFormData(prev => ({ ...prev, [name]: type === "checkbox" ? checked : name === "capacity" ? parseInt(value) || 0 : value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -165,6 +167,23 @@ export const UpdateEvent = () => {
                 onFocus={e => (e.target.style.border = '1px solid var(--magenta)')}
                 onBlur={e => (e.target.style.border = '1px solid rgba(212,175,55,0.3)')}
               />
+            </div>
+
+            <div className="col-span-1 md:col-span-2">
+              <label
+                className="flex items-center gap-3 p-4 rounded-xl cursor-pointer"
+                style={{ background: "rgba(74,0,78,0.03)", border: "1px solid rgba(212,175,55,0.3)", color: "var(--plum)" }}
+              >
+                <input
+                  id="auto_approve"
+                  name="auto_approve"
+                  type="checkbox"
+                  checked={Boolean(formData.auto_approve)}
+                  onChange={handleChange}
+                  className="h-5 w-5 accent-[var(--magenta)]"
+                />
+                <span className="text-sm font-semibold">Enable Auto-Approval for Registrations</span>
+              </label>
             </div>
 
             <div className="col-span-1 md:col-span-2">

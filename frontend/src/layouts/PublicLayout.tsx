@@ -160,11 +160,11 @@ export const PublicLayout = () => {
                 </li>
                 <li className="flex items-center gap-2">
                   <Phone className="w-4 h-4 shrink-0" style={{ color: "var(--gold-light)" }} />
-                  +1 (555) 123-4567
+                  +252633306376
                 </li>
                 <li className="flex items-center gap-2">
                   <MapPin className="w-4 h-4 shrink-0" style={{ color: "var(--gold-light)" }} />
-                  Nairobi, Kenya
+                  hargaisa, somaliland
                 </li>
               </ul>
             </div>

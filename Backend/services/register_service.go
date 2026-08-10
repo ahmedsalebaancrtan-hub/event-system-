@@ -22,52 +22,69 @@ func NewRegisterService(repo *repository.RegistersRepo) *RegisterService {
 	return &RegisterService{Repo: repo}
 }
 
-func (svc *RegisterService) PublicRegister(data *dtos.PublicRegisterDTO) (int, error) {
+func (svc *RegisterService) PublicRegister(data *dtos.PublicRegisterDTO) (int, string, error) {
 
 	event, err := svc.Repo.GetEventByID(data.EventID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return http.StatusNotFound, errors.New("event not found")
+			return http.StatusNotFound, "", errors.New("event not found")
 		}
-		return http.StatusInternalServerError, err
+		return http.StatusInternalServerError, "", err
 	}
 
 	if event.Status != "approved" {
-		return http.StatusBadRequest, errors.New("event is not open for registration")
+		return http.StatusBadRequest, "", errors.New("event is not open for registration")
 	}
 
 	guestEmail := strings.ToLower(data.GuestEmail)
 	existing, err := svc.Repo.GetRegistrationByEmailAndEvent(data.EventID, guestEmail)
 	if err == nil {
 		if existing.Status == "pending" || existing.Status == "approved" {
-			return http.StatusConflict, errors.New("you have already registered for this event")
+			return http.StatusConflict, "", errors.New("you have already registered for this event")
 		}
 	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
-		return http.StatusInternalServerError, err
+		return http.StatusInternalServerError, "", err
 	}
 
 	count, err := svc.Repo.CountActiveRegistrations(data.EventID)
 	if err != nil {
-		return http.StatusInternalServerError, err
+		return http.StatusInternalServerError, "", err
 	}
 
 	if int(count) >= event.Capacity {
-		return http.StatusBadRequest, errors.New("event is full")
+		return http.StatusBadRequest, "", errors.New("event is full")
+	}
+
+	registrationStatus := "pending"
+	if event.AutoApprove {
+		registrationStatus = "approved"
 	}
 
 	registration := models.EventRegistration{
 		EventID:    data.EventID,
 		GuestName:  data.GuestName,
-		GuestEmail: data.GuestEmail,
+		GuestEmail: guestEmail,
 		GuestPhone: data.GuestPhone,
-		Status:     "pending",
+		Status:     registrationStatus,
+		Event:      event,
 	}
 
 	if err := svc.Repo.CreateRegistration(registration); err != nil {
-		return http.StatusInternalServerError, err
+		return http.StatusInternalServerError, "", err
 	}
 
-	return http.StatusCreated, nil
+	if registration.Status == "approved" {
+		go func() {
+			log.Printf("[EMAIL] sending auto-approval registration email to %s", registration.GuestEmail)
+			if err := svc.sendReviewEmail(registration, "approved"); err != nil {
+				log.Printf("[EMAIL ERROR] %v", err)
+				return
+			}
+			log.Printf("[EMAIL] sent auto-approval registration email to %s", registration.GuestEmail)
+		}()
+	}
+
+	return http.StatusCreated, registration.Status, nil
 }
 
 func (svc *RegisterService) ReviewRegistration(regID uint, data *dtos.ReviewRegistrationDTO) (int, error) {

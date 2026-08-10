@@ -30,14 +30,20 @@ func (h *RegisterHandler) PublicRegister(c *gin.Context) {
 		return
 	}
 
-	status, err := h.Service.PublicRegister(&body)
+	httpStatus, registrationStatus, err := h.Service.PublicRegister(&body)
 	if err != nil {
-		c.JSON(status, gin.H{"error": err.Error()})
+		c.JSON(httpStatus, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(status, gin.H{
-		"message": "registration submitted successfully and is pending review",
+	message := "registration submitted successfully and is pending review"
+	if registrationStatus == "approved" {
+		message = "registration approved successfully"
+	}
+
+	c.JSON(httpStatus, gin.H{
+		"message": message,
+		"status":  registrationStatus,
 	})
 }
 

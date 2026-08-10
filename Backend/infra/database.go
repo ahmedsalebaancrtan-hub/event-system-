@@ -38,6 +38,7 @@ func DbConnect() {
 
 func ensureEventRegistrationSchema(db *gorm.DB) {
 	statements := []string{
+		`ALTER TABLE events ADD COLUMN IF NOT EXISTS auto_approve boolean DEFAULT false`,
 		`ALTER TABLE event_registrations ADD COLUMN IF NOT EXISTS guest_name varchar(100)`,
 		`ALTER TABLE event_registrations ADD COLUMN IF NOT EXISTS guest_email varchar(100)`,
 		`ALTER TABLE event_registrations ADD COLUMN IF NOT EXISTS guest_phone varchar(20)`,

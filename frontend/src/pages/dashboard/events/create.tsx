@@ -24,14 +24,16 @@ export const CreateEvent = () => {
     end_time: "",
     capacity: 0,
     description: "",
-    img_url: ""
+    img_url: "",
+    auto_approve: false
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
+    const { name, value, type } = e.target;
+    const checked = e.target instanceof HTMLInputElement ? e.target.checked : false;
     setFormData(prev => ({
       ...prev,
-      [name]: name === "capacity" ? parseInt(value) || 0 : value
+      [name]: type === "checkbox" ? checked : name === "capacity" ? parseInt(value) || 0 : value
     }));
   };
 
@@ -171,6 +173,23 @@ export const CreateEvent = () => {
                 onFocus={e => (e.target.style.border = '1px solid var(--magenta)')}
                 onBlur={e => (e.target.style.border = '1px solid rgba(212,175,55,0.3)')}
               />
+            </div>
+
+            <div className="col-span-1 md:col-span-2">
+              <label
+                className="flex items-center gap-3 p-4 rounded-xl cursor-pointer"
+                style={{ background: "rgba(74,0,78,0.03)", border: "1px solid rgba(212,175,55,0.3)", color: "var(--plum)" }}
+              >
+                <input
+                  id="auto_approve"
+                  name="auto_approve"
+                  type="checkbox"
+                  checked={formData.auto_approve}
+                  onChange={handleChange}
+                  className="h-5 w-5 accent-[var(--magenta)]"
+                />
+                <span className="text-sm font-semibold">Enable Auto-Approval for Registrations</span>
+              </label>
             </div>
 
             <div className="col-span-1 md:col-span-2">

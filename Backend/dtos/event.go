@@ -9,6 +9,7 @@ type CreateEventDTO struct {
 	Capacity    int    `json:"capacity" binding:"required"`
 	Description string `json:"description"`
 	ImgUrl      string `json:"img_url"`
+	AutoApprove bool   `json:"auto_approve"`
 }
 
 type UpdateEventDTO struct {
@@ -20,6 +21,7 @@ type UpdateEventDTO struct {
 	Capacity    *int    `json:"capacity"`
 	Description *string `json:"description"`
 	ImgURL      *string `json:"img_url"`
+	AutoApprove *bool   `json:"auto_approve"`
 }
 
 type EventFilterDTO struct {

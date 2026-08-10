@@ -50,6 +50,7 @@ func (svc *EventSvc) CreateEvent(data *dtos.CreateEventDTO) (int, error) {
 		Description: data.Description,
 		ImgUrl:      data.ImgUrl,
 		Status:      "pending", // 🔥 important
+		AutoApprove: data.AutoApprove,
 	}
 
 	if err := svc.Repo.CreateEvent(event); err != nil {
@@ -108,7 +109,6 @@ func (svc *EventSvc) GetEventById(id uint) (int, models.Event, error) {
 	return http.StatusOK, data, nil
 }
 
-
 func (svc *EventSvc) UpdateEvent(id uint, data *dtos.UpdateEventDTO) (int, error) {
 
 	event, err := svc.Repo.GetEventByID(id)
@@ -143,6 +143,10 @@ func (svc *EventSvc) UpdateEvent(id uint, data *dtos.UpdateEventDTO) (int, error
 			return http.StatusBadRequest, errors.New("invalid image url")
 		}
 		event.ImgUrl = imgUrl
+	}
+
+	if data.AutoApprove != nil {
+		event.AutoApprove = *data.AutoApprove
 	}
 
 	// Handle time updates carefully

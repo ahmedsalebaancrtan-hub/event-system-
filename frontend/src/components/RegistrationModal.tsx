@@ -16,6 +16,7 @@ export const RegistrationModal = ({ event, onClose }: RegistrationModalProps) =>
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
     if (event) {
@@ -24,6 +25,7 @@ export const RegistrationModal = ({ event, onClose }: RegistrationModalProps) =>
       setGuestPhone("");
       setError("");
       setSuccess(false);
+      setSuccessMessage("");
       setIsSubmitting(false);
     }
   }, [event]);
@@ -50,7 +52,13 @@ export const RegistrationModal = ({ event, onClose }: RegistrationModalProps) =>
     };
 
     try {
-      await publicApi.post("/public/register", payload);
+      const response = await publicApi.post("/public/register", payload);
+      const registrationStatus = response.data?.status;
+      setSuccessMessage(
+        registrationStatus === "approved"
+          ? "Hambalyo! Diwaangelintaadii waa la aqbalay. Email muhiim ah ayaa loo diray inbox-kaaga."
+          : "Codsigaaga waa la helay oo waa Pending. Waxaa lagu soo xidhiidhi doonaa email marka la eego."
+      );
       setSuccess(true);
     } catch (err: unknown) {
       const message =
@@ -118,10 +126,10 @@ export const RegistrationModal = ({ event, onClose }: RegistrationModalProps) =>
                 <CheckCircle className="w-8 h-8 text-green-500" />
               </div>
               <p className="font-semibold" style={{ color: "var(--plum)" }}>
-                Application Submitted!
+                {successMessage.startsWith("Hambalyo") ? "Registration Approved!" : "Application Submitted!"}
               </p>
               <p className="text-sm text-gray-500 mt-2 leading-relaxed">
-                Your registration is pending approval. You will receive an email once your application has been reviewed.
+                {successMessage}
               </p>
               <button
                 onClick={onClose}
