@@ -39,12 +39,27 @@ func RegisterRoute(r *gin.Engine) {
 		EventGroup.GET("/approved-event", middlewares.Authenticated(), middlewares.RequiredRole("ADMIN"), EventHandler.GetApprovedEvents)
 	}
 
-	RegisterGroup := ApiGroup.Group("/registers")
+	publicGroup := ApiGroup.Group("/public")
 	{
-		RegisterGroup.POST("/create", middlewares.Authenticated(), RegisterHandler.RegisterToEvent)
-		RegisterGroup.GET("/events/:id/users", middlewares.Authenticated(), RegisterHandler.GetEventUsers)
-		RegisterGroup.GET("/users/:id/events", middlewares.Authenticated(), RegisterHandler.GetUserEvents)
-		RegisterGroup.DELETE("/:eventId", middlewares.Authenticated(), RegisterHandler.CancelRegistration)
+		publicGroup.POST("/register", RegisterHandler.PublicRegister)
+		publicGroup.GET("/events/search", EventHandler.FilterEvents)
+		publicGroup.GET("/events/:event_id", EventHandler.FindEventByid)
+		publicGroup.GET("/events", EventHandler.GetApprovedEvents)
+	}
+
+	RegistrationGroup := ApiGroup.Group("/registrations")
+	RegistrationGroup.Use(middlewares.Authenticated(), middlewares.RequiredRole("ADMIN", "STAFF"))
+	{
+		RegistrationGroup.GET("/pending", RegisterHandler.GetPendingRegistrations)
+		RegistrationGroup.GET("/approved", RegisterHandler.GetApprovedRegistrations)
+		RegistrationGroup.PATCH("/:id/review", RegisterHandler.ReviewRegistration)
+	}
+
+	legacyRegisterGroup := ApiGroup.Group("/registers")
+	legacyRegisterGroup.Use(middlewares.Authenticated(), middlewares.RequiredRole("ADMIN", "STAFF", "ORGANIZER"))
+	{
+		legacyRegisterGroup.GET("/events/:event_id/users", RegisterHandler.GetApprovedEventAttendees)
+		legacyRegisterGroup.GET("/users/:id/events", RegisterHandler.GetApprovedEventsForCurrentGuest)
 	}
 
 }

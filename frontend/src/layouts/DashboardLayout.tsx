@@ -18,19 +18,20 @@ import {
 } from "lucide-react";
 import { useUserStore } from "../store/user-store";
 import { useEventStore } from "../store/event-store";
-import { api } from "../lib/api";
+import { api, hasAuthTokens } from "../lib/api";
 
 interface NavItem {
   name: string;
   href: string;
   icon: React.ElementType;
   adminOnly?: boolean;
+  staffOnly?: boolean;
 }
 
 const NAV_ITEMS: NavItem[] = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Events Calendar", href: "/dashboard/calendar", icon: Calendar },
-  { name: "Registered Events", href: "/dashboard/registered", icon: Ticket },
+  { name: "Registration Review", href: "/dashboard/registered", icon: Ticket, staffOnly: true },
   { name: "Event Directories", href: "/dashboard/directories", icon: FolderOpen },
   { name: "Profile Settings", href: "/dashboard/profile", icon: Settings },
   { name: "User & Staff", href: "/dashboard/users", icon: Users, adminOnly: true },
@@ -48,6 +49,12 @@ export const DashboardLayout = () => {
   const [profile, setProfile] = useState<{ name: string; email: string; role: string } | null>(null);
 
   useEffect(() => {
+    if (!hasAuthTokens()) {
+      logout();
+      navigate("/auth/login", { replace: true });
+      return;
+    }
+
     const fetchSession = async () => {
       try {
         const response = await api.get("/users/whoami");
@@ -60,7 +67,7 @@ export const DashboardLayout = () => {
       } catch (err) {
         console.error("Session expired or unauthorized", err);
         logout();
-        navigate("/auth/login");
+        navigate("/auth/login", { replace: true });
       }
     };
     fetchSession();
@@ -106,6 +113,7 @@ export const DashboardLayout = () => {
   }
 
   const isAdmin = profile?.role === "ADMIN";
+  const isStaff = profile?.role === "STAFF";
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ backgroundColor: 'var(--ivory)' }}>
@@ -163,7 +171,11 @@ export const DashboardLayout = () => {
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto py-6 px-3 space-y-1 scrollbar-hide">
-          {NAV_ITEMS.filter(item => !item.adminOnly || isAdmin).map((item) => {
+          {NAV_ITEMS.filter(item => {
+            if (item.adminOnly && !isAdmin) return false;
+            if (item.staffOnly && !isAdmin && !isStaff) return false;
+            return true;
+          }).map((item) => {
             const isActive = item.href === "/dashboard"
             ? location.pathname === "/dashboard"
             : location.pathname.startsWith(item.href);

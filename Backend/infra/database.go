@@ -30,9 +30,37 @@ func DbConnect() {
 	}
 	db.AutoMigrate(models.User{}, models.PasswordResetToken{},
 		models.Event{}, models.EventRegistration{})
+	ensureEventRegistrationSchema(db)
 
 	DB = db
 
+}
+
+func ensureEventRegistrationSchema(db *gorm.DB) {
+	statements := []string{
+		`ALTER TABLE event_registrations ADD COLUMN IF NOT EXISTS guest_name varchar(100)`,
+		`ALTER TABLE event_registrations ADD COLUMN IF NOT EXISTS guest_email varchar(100)`,
+		`ALTER TABLE event_registrations ADD COLUMN IF NOT EXISTS guest_phone varchar(20)`,
+		`ALTER TABLE event_registrations ADD COLUMN IF NOT EXISTS rejection_reason text`,
+		`DO $$ BEGIN
+			IF EXISTS (
+				SELECT 1
+				FROM information_schema.columns
+				WHERE table_name = 'event_registrations'
+					AND column_name = 'user_id'
+			) THEN
+				ALTER TABLE event_registrations ALTER COLUMN user_id DROP NOT NULL;
+			END IF;
+		END $$`,
+		`ALTER TABLE event_registrations ALTER COLUMN status SET DEFAULT 'pending'`,
+		`CREATE INDEX IF NOT EXISTS idx_event_registrations_event_guest_email ON event_registrations (event_id, guest_email)`,
+	}
+
+	for _, statement := range statements {
+		if err := db.Exec(statement).Error; err != nil {
+			panic(fmt.Sprintf("failed to migrate event registrations schema: %v", err))
+		}
+	}
 }
 
 func openDatabase(host string, config AppCofig) (*gorm.DB, error) {

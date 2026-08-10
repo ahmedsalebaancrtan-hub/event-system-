@@ -1,19 +1,27 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUserStore } from "../../store/user-store";
+import { hasAuthTokens } from "../../lib/api";
 import { HeroSection } from "./components/HeroSection";
 import { LoginForm } from "./components/LoginForm";
 import { TwoFactorVerification } from "./components/TwoFactorVerification";
 
 export const Login = () => {
   const navigate = useNavigate();
-  const { requires2FA, isAuthenticated } = useUserStore();
+  const { requires2FA, isAuthenticated, logout } = useUserStore();
 
   useEffect(() => {
-    if (isAuthenticated && !requires2FA) {
-      navigate("/dashboard");
+    if (!hasAuthTokens()) {
+      if (isAuthenticated) {
+        logout();
+      }
+      return;
     }
-  }, [isAuthenticated, requires2FA, navigate]);
+
+    if (isAuthenticated && !requires2FA) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [isAuthenticated, requires2FA, navigate, logout]);
 
   return (
     <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 font-sans bg-[#ECEEF5]">

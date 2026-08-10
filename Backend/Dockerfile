@@ -18,8 +18,9 @@ FROM alpine:latest
 
 WORKDIR /app
 
+RUN apk add --no-cache ca-certificates
+
 COPY --from=builder /app/main .
-COPY --from=builder /app/.env .
 
 # run the binary
 

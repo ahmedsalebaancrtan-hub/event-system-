@@ -54,6 +54,11 @@ export const useUserStore = create<UserState>()(
     }),
     {
       name: "event-management-user-storage",
+      onRehydrateStorage: () => (state) => {
+        if (state?.isAuthenticated && !localStorage.getItem("access_token")) {
+          state.logout();
+        }
+      },
     }
   )
 );

@@ -1,10 +1,11 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { createBrowserRouter } from 'react-router-dom';
 import { Dashboard } from './pages/dashboard';
-// Remove brackets for default export
 import { Register } from './pages/authentication/register';
 import { Login } from './pages/authentication/login';
 import { ForgotPassword } from './pages/authentication/forgot-password';
 import { DashboardLayout } from './layouts/DashboardLayout';
+import { PublicLayout } from './layouts/PublicLayout';
+import { LandingPage } from './pages/public/LandingPage';
 import { EventList } from './pages/dashboard/events';
 import { CreateEvent } from './pages/dashboard/events/create';
 import { EventDetails } from './pages/dashboard/events/details';
@@ -17,7 +18,13 @@ import { UsersAndStaff } from './pages/dashboard/users';
 export const routes = createBrowserRouter([
   {
     path: "/",
-    element: <Navigate to="/dashboard" replace />
+    element: <PublicLayout />,
+    children: [
+      {
+        index: true,
+        element: <LandingPage />
+      }
+    ]
   },
   {
     path: "/auth",

@@ -72,8 +72,8 @@ func (h *EventHandler) GetApprovedEvents(c *gin.Context) {
 	}
 
 	c.JSON(status, gin.H{
-		"message": "approved events fetched",
-		"data":    data,
+		"status": "success",
+		"data":   data,
 	})
 }
 func (h *EventHandler) Getall(c *gin.Context) {
