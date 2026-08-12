@@ -1,15 +1,15 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save, AlertCircle } from "lucide-react";
 import type { CreateEventDTO } from "../../../types/event";
 import { api } from "../../../lib/api";
-
-const inputCls = "block w-full px-4 py-3 rounded-xl text-sm outline-none transition-all";
-const inputStyle = {
-  background: 'rgba(74,0,78,0.03)',
-  border: '1px solid rgba(212,175,55,0.3)',
-  color: 'var(--plum)',
-};
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Card, CardContent } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export const CreateEvent = () => {
   const navigate = useNavigate();
@@ -28,7 +28,7 @@ export const CreateEvent = () => {
     auto_approve: false
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
     const checked = e.target instanceof HTMLInputElement ? e.target.checked : false;
     setFormData(prev => ({
@@ -49,8 +49,9 @@ export const CreateEvent = () => {
       };
       await api.post("/events/create", payload);
       navigate("/dashboard/directories");
-    } catch (err: any) {
-      setError(err.response?.data?.error || "Failed to create event. Please verify your inputs.");
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } };
+      setError(e.response?.data?.error || "Failed to create event. Please verify your inputs.");
     } finally {
       setIsLoading(false);
     }
@@ -60,174 +61,173 @@ export const CreateEvent = () => {
     <div className="max-w-4xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-4 mb-8">
-        <Link
-          to="/dashboard/directories"
-          className="p-2 rounded-full transition-colors"
-          style={{ background: 'white', border: '1px solid rgba(212,175,55,0.35)', color: 'var(--plum)' }}
-          onMouseEnter={e => {
-            (e.currentTarget as HTMLElement).style.borderColor = 'var(--magenta)';
-            (e.currentTarget as HTMLElement).style.color = 'var(--magenta)';
-          }}
-          onMouseLeave={e => {
-            (e.currentTarget as HTMLElement).style.borderColor = 'rgba(212,175,55,0.35)';
-            (e.currentTarget as HTMLElement).style.color = 'var(--plum)';
-          }}
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </Link>
+        <Button id="back-btn" asChild variant="outline" size="icon" className="rounded-full shrink-0">
+          <Link to="/dashboard/directories">
+            <ArrowLeft className="w-5 h-5" />
+          </Link>
+        </Button>
         <div>
-          <h1 className="font-luxury text-3xl font-bold" style={{ color: 'var(--plum)' }}>Create New Event</h1>
-          <div className="h-0.5 w-12 mt-2" style={{ background: 'linear-gradient(90deg, var(--gold), var(--magenta))' }}></div>
-          <p className="text-gray-500 mt-2 text-sm">Fill out the details below to register a new event.</p>
+          <h1 className="text-2xl font-bold text-foreground">Create New Event</h1>
+          <div className="h-1 w-10 mt-2 rounded-full bg-gradient-to-r from-primary to-primary/40" />
+          <p className="text-muted-foreground mt-1 text-sm">Fill out the details below to register a new event.</p>
         </div>
       </div>
 
+      {/* Error banner */}
       {error && (
-        <div className="mb-6 p-4 rounded-xl text-red-600" style={{ background: '#fef2f2', border: '1px solid #fecaca' }}>
-          {error}
+        <div className="mb-6 flex items-start gap-3 p-4 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive">
+          <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+          <p className="text-sm">{error}</p>
         </div>
       )}
 
-      <div className="bg-white" style={{ borderRadius: '24px', border: '1px solid rgba(212,175,55,0.25)', boxShadow: '0 4px 24px rgba(74,0,78,0.08)' }}>
-        <div className="h-1 rounded-t-[24px]" style={{ background: 'linear-gradient(90deg, var(--plum-dark), var(--magenta), var(--gold))' }}></div>
-        <form onSubmit={handleSubmit} className="p-8 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <Card className="overflow-hidden">
+        <div className="h-1 bg-gradient-to-r from-primary via-primary/70 to-yellow-400" />
+        <CardContent className="p-8">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-            <div className="col-span-1 md:col-span-2">
-              <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--plum)' }}>
-                Event Title <span style={{ color: 'var(--magenta)' }}>*</span>
-              </label>
-              <input id="title" name="title" type="text" required value={formData.title}
-                onChange={handleChange} className={inputCls} style={inputStyle}
-                placeholder="e.g. Annual Tech Summit 2026"
-                onFocus={e => (e.target.style.border = '1px solid var(--magenta)')}
-                onBlur={e => (e.target.style.border = '1px solid rgba(212,175,55,0.3)')}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--plum)' }}>
-                Event Type <span style={{ color: 'var(--magenta)' }}>*</span>
-              </label>
-              <select id="type" name="type" required value={formData.type}
-                onChange={handleChange} className={`${inputCls} appearance-none`} style={inputStyle}
-                onFocus={e => (e.target.style.border = '1px solid var(--magenta)')}
-                onBlur={e => (e.target.style.border = '1px solid rgba(212,175,55,0.3)')}>
-                <option value="CONFERENCE">Conference</option>
-                <option value="SEMINAR">Seminar</option>
-                <option value="WORKSHOP">Workshop</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--plum)' }}>
-                Location <span style={{ color: 'var(--magenta)' }}>*</span>
-              </label>
-              <input id="location" name="location" type="text" required value={formData.location}
-                onChange={handleChange} className={inputCls} style={inputStyle}
-                placeholder="e.g. Grand Hotel Ballroom"
-                onFocus={e => (e.target.style.border = '1px solid var(--magenta)')}
-                onBlur={e => (e.target.style.border = '1px solid rgba(212,175,55,0.3)')}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--plum)' }}>
-                Start Date & Time <span style={{ color: 'var(--magenta)' }}>*</span>
-              </label>
-              <input id="start_time" name="start_time" type="datetime-local" required
-                value={formData.start_time} onChange={handleChange} className={inputCls} style={inputStyle}
-                onFocus={e => (e.target.style.border = '1px solid var(--magenta)')}
-                onBlur={e => (e.target.style.border = '1px solid rgba(212,175,55,0.3)')}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--plum)' }}>
-                End Date & Time <span style={{ color: 'var(--magenta)' }}>*</span>
-              </label>
-              <input id="end_time" name="end_time" type="datetime-local" required
-                value={formData.end_time} onChange={handleChange} className={inputCls} style={inputStyle}
-                onFocus={e => (e.target.style.border = '1px solid var(--magenta)')}
-                onBlur={e => (e.target.style.border = '1px solid rgba(212,175,55,0.3)')}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--plum)' }}>
-                Attendee Capacity <span style={{ color: 'var(--magenta)' }}>*</span>
-              </label>
-              <input id="capacity" name="capacity" type="number" min="1" required
-                value={formData.capacity} onChange={handleChange} className={inputCls} style={inputStyle}
-                placeholder="e.g. 500"
-                onFocus={e => (e.target.style.border = '1px solid var(--magenta)')}
-                onBlur={e => (e.target.style.border = '1px solid rgba(212,175,55,0.3)')}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--plum)' }}>Cover Image URL</label>
-              <input id="img_url" name="img_url" type="url" value={formData.img_url}
-                onChange={handleChange} className={inputCls} style={inputStyle}
-                placeholder="https://example.com/image.jpg"
-                onFocus={e => (e.target.style.border = '1px solid var(--magenta)')}
-                onBlur={e => (e.target.style.border = '1px solid rgba(212,175,55,0.3)')}
-              />
-            </div>
-
-            <div className="col-span-1 md:col-span-2">
-              <label
-                className="flex items-center gap-3 p-4 rounded-xl cursor-pointer"
-                style={{ background: "rgba(74,0,78,0.03)", border: "1px solid rgba(212,175,55,0.3)", color: "var(--plum)" }}
-              >
-                <input
-                  id="auto_approve"
-                  name="auto_approve"
-                  type="checkbox"
-                  checked={formData.auto_approve}
+              {/* Event Title */}
+              <div className="col-span-1 md:col-span-2 space-y-1.5">
+                <Label htmlFor="title">Event Title <span className="text-destructive">*</span></Label>
+                <Input
+                  id="title"
+                  name="title"
+                  type="text"
+                  required
+                  value={formData.title}
                   onChange={handleChange}
-                  className="h-5 w-5 accent-[var(--magenta)]"
+                  placeholder="e.g. Annual Tech Summit 2026"
                 />
-                <span className="text-sm font-semibold">Enable Auto-Approval for Registrations</span>
-              </label>
+              </div>
+
+              {/* Event Type */}
+              <div className="space-y-1.5">
+                <Label htmlFor="type">Event Type <span className="text-destructive">*</span></Label>
+                <Select
+                  value={formData.type}
+                  onValueChange={(val) => setFormData(prev => ({ ...prev, type: val as CreateEventDTO["type"] }))}
+                >
+                  <SelectTrigger id="type">
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="CONFERENCE">Conference</SelectItem>
+                    <SelectItem value="SEMINAR">Seminar</SelectItem>
+                    <SelectItem value="WORKSHOP">Workshop</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Location */}
+              <div className="space-y-1.5">
+                <Label htmlFor="location">Location <span className="text-destructive">*</span></Label>
+                <Input
+                  id="location"
+                  name="location"
+                  type="text"
+                  required
+                  value={formData.location}
+                  onChange={handleChange}
+                  placeholder="e.g. Grand Hotel Ballroom"
+                />
+              </div>
+
+              {/* Start Time */}
+              <div className="space-y-1.5">
+                <Label htmlFor="start_time">Start Date & Time <span className="text-destructive">*</span></Label>
+                <Input
+                  id="start_time"
+                  name="start_time"
+                  type="datetime-local"
+                  required
+                  value={formData.start_time}
+                  onChange={handleChange}
+                />
+              </div>
+
+              {/* End Time */}
+              <div className="space-y-1.5">
+                <Label htmlFor="end_time">End Date & Time <span className="text-destructive">*</span></Label>
+                <Input
+                  id="end_time"
+                  name="end_time"
+                  type="datetime-local"
+                  required
+                  value={formData.end_time}
+                  onChange={handleChange}
+                />
+              </div>
+
+              {/* Capacity */}
+              <div className="space-y-1.5">
+                <Label htmlFor="capacity">Attendee Capacity <span className="text-destructive">*</span></Label>
+                <Input
+                  id="capacity"
+                  name="capacity"
+                  type="number"
+                  min="1"
+                  required
+                  value={formData.capacity}
+                  onChange={handleChange}
+                  placeholder="e.g. 500"
+                />
+              </div>
+
+              {/* Image URL */}
+              <div className="space-y-1.5">
+                <Label htmlFor="img_url">Cover Image URL</Label>
+                <Input
+                  id="img_url"
+                  name="img_url"
+                  type="url"
+                  value={formData.img_url}
+                  onChange={handleChange}
+                  placeholder="https://example.com/image.jpg"
+                />
+              </div>
+
+              {/* Auto Approve Toggle */}
+              <div className="col-span-1 md:col-span-2">
+                <div className="flex items-center justify-between p-4 rounded-xl bg-muted/40 border border-border/50">
+                  <div>
+                    <p className="font-semibold text-sm text-foreground">Enable Auto-Approval</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">Automatically approve new registrations without manual review</p>
+                  </div>
+                  <Switch
+                    id="auto_approve"
+                    checked={formData.auto_approve}
+                    onCheckedChange={(checked: boolean) => setFormData(prev => ({ ...prev, auto_approve: checked }))}
+                  />
+                </div>
+              </div>
+
+              {/* Description */}
+              <div className="col-span-1 md:col-span-2 space-y-1.5">
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  name="description"
+                  rows={4}
+                  value={formData.description}
+                  onChange={handleChange}
+                  placeholder="Provide details about the event agenda, speakers, and other relevant information..."
+                />
+              </div>
             </div>
 
-            <div className="col-span-1 md:col-span-2">
-              <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--plum)' }}>Description</label>
-              <textarea id="description" name="description" rows={4}
-                value={formData.description} onChange={handleChange}
-                className={`${inputCls} resize-none`} style={inputStyle}
-                placeholder="Provide details about the event agenda, speakers, and other relevant information..."
-                onFocus={e => (e.target.style.border = '1px solid var(--magenta)')}
-                onBlur={e => (e.target.style.border = '1px solid rgba(212,175,55,0.3)')}
-              />
+            <div className="pt-6 flex justify-end gap-4 border-t border-border/40">
+              <Button id="cancel-btn" asChild variant="outline">
+                <Link to="/dashboard/directories">Cancel</Link>
+              </Button>
+              <Button id="submit-btn" type="submit" disabled={isLoading} className="gap-2">
+                <Save className="w-5 h-5" />
+                {isLoading ? "Saving..." : "Create Event"}
+              </Button>
             </div>
-          </div>
-
-          <div className="pt-6 flex justify-end gap-4" style={{ borderTop: '1px solid rgba(212,175,55,0.2)' }}>
-            <Link
-              to="/dashboard/directories"
-              className="px-6 py-3 rounded-xl font-medium transition-colors"
-              style={{ background: 'rgba(74,0,78,0.05)', color: 'var(--plum)', border: '1px solid rgba(74,0,78,0.15)' }}
-            >
-              Cancel
-            </Link>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="flex items-center gap-2 px-8 py-3 rounded-xl font-medium text-white hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed transition-all"
-              style={{
-                background: `linear-gradient(135deg, var(--plum), var(--magenta))`,
-                boxShadow: '0 4px 15px rgba(189,3,166,0.3)',
-                border: '1px solid rgba(212,175,55,0.3)'
-              }}
-            >
-              <Save className="w-5 h-5" style={{ color: 'var(--gold-light)' }} />
-              {isLoading ? "Saving..." : "Create Event"}
-            </button>
-          </div>
-        </form>
-      </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 };

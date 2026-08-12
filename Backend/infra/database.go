@@ -37,30 +37,22 @@ func DbConnect() {
 }
 
 func ensureEventRegistrationSchema(db *gorm.DB) {
-	statements := []string{
-		`ALTER TABLE events ADD COLUMN IF NOT EXISTS auto_approve boolean DEFAULT false`,
-		`ALTER TABLE event_registrations ADD COLUMN IF NOT EXISTS guest_name varchar(100)`,
-		`ALTER TABLE event_registrations ADD COLUMN IF NOT EXISTS guest_email varchar(100)`,
-		`ALTER TABLE event_registrations ADD COLUMN IF NOT EXISTS guest_phone varchar(20)`,
-		`ALTER TABLE event_registrations ADD COLUMN IF NOT EXISTS rejection_reason text`,
-		`DO $$ BEGIN
-			IF EXISTS (
-				SELECT 1
-				FROM information_schema.columns
-				WHERE table_name = 'event_registrations'
-					AND column_name = 'user_id'
-			) THEN
-				ALTER TABLE event_registrations ALTER COLUMN user_id DROP NOT NULL;
-			END IF;
-		END $$`,
-		`ALTER TABLE event_registrations ALTER COLUMN status SET DEFAULT 'pending'`,
-		`CREATE INDEX IF NOT EXISTS idx_event_registrations_event_guest_email ON event_registrations (event_id, guest_email)`,
-	}
+	// GORM's AutoMigrate handles adding new columns and indexes.
+	// We only need raw SQL to drop the obsolete user_id column safely
+	// since GORM does not drop columns automatically.
+	statement := `DO $$ BEGIN
+		IF EXISTS (
+			SELECT 1
+			FROM information_schema.columns
+			WHERE table_name = 'event_registrations'
+				AND column_name = 'user_id'
+		) THEN
+			ALTER TABLE event_registrations DROP COLUMN user_id;
+		END IF;
+	END $$`
 
-	for _, statement := range statements {
-		if err := db.Exec(statement).Error; err != nil {
-			panic(fmt.Sprintf("failed to migrate event registrations schema: %v", err))
-		}
+	if err := db.Exec(statement).Error; err != nil {
+		panic(fmt.Sprintf("failed to drop obsolete user_id column from event_registrations: %v", err))
 	}
 }
 

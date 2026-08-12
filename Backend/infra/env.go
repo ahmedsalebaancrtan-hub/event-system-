@@ -39,6 +39,21 @@ func InitEnv() {
 	Configuration.Refresh_jwt_token = os.Getenv("Refresh_jwt_Token")
 	Configuration.EMAIL_USER = os.Getenv("EMAIL_USER")
 	Configuration.EMAIL_PASS = os.Getenv("EMAIL_PASS")
+
+	requiredVars := map[string]string{
+		"DB_USER":           Configuration.DbUser,
+		"DB_PASSWORD":       Configuration.DbPassword,
+		"DB_NAME":           Configuration.DbName,
+		"Access_jwt_Token":  Configuration.Access_jwt_Token,
+		"EMAIL_USER":        Configuration.EMAIL_USER,
+		"EMAIL_PASS":        Configuration.EMAIL_PASS,
+	}
+
+	for key, val := range requiredVars {
+		if val == "" {
+			log.Fatalf("CRITICAL ERROR: Environment variable %s is not set", key)
+		}
+	}
 }
 
 func getEnv(key string, fallback string) string {

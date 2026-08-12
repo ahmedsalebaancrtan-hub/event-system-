@@ -4,9 +4,9 @@ import "time"
 
 type EventRegistration struct {
 	ID              uint      `json:"id" gorm:"primaryKey"`
-	EventID         uint      `json:"event_id" gorm:"not null"`
+	EventID         uint      `json:"event_id" gorm:"not null;index:idx_event_guest_email"`
 	GuestName       string    `json:"guest_name" gorm:"size:100;not null"`
-	GuestEmail      string    `json:"guest_email" gorm:"size:100;not null"`
+	GuestEmail      string    `json:"guest_email" gorm:"size:100;not null;index:idx_event_guest_email"`
 	GuestPhone      string    `json:"guest_phone" gorm:"size:20"`
 	Status          string    `json:"status" gorm:"default:'pending'"`
 	RejectionReason string    `json:"rejection_reason" gorm:"type:text"`
@@ -14,3 +14,4 @@ type EventRegistration struct {
 	UpdatedAt       time.Time `json:"updated_at"`
 	Event           Event     `json:"event" gorm:"foreignKey:EventID"`
 }
+

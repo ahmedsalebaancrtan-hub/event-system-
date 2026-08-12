@@ -1,8 +1,11 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Plus, MapPin, Calendar as CalendarIcon, Users } from "lucide-react";
+import { Plus, MapPin, Calendar as CalendarIcon, Users, AlertCircle } from "lucide-react";
 import { useUserStore } from "../../../store/user-store";
 import { useEventStore } from "../../../store/event-store";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 
 export const EventList = () => {
   const { user } = useUserStore();
@@ -17,7 +20,7 @@ export const EventList = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-4" style={{ borderColor: 'var(--magenta)' }}></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-primary" />
       </div>
     );
   }
@@ -27,63 +30,47 @@ export const EventList = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="font-luxury text-4xl font-bold" style={{ color: 'var(--plum)' }}>Event Directories</h1>
-          <div className="h-0.5 w-16 mt-2 mb-1" style={{ background: 'linear-gradient(90deg, var(--gold), var(--magenta))' }}></div>
-          <p className="text-gray-500 text-sm mt-1">Browse and manage all registered events in the system.</p>
+          <h1 className="text-3xl font-bold text-foreground">Event Directories</h1>
+          <div className="h-1 w-14 mt-2 mb-1 rounded-full bg-gradient-to-r from-primary to-primary/40" />
+          <p className="text-muted-foreground text-sm mt-1">Browse and manage all registered events in the system.</p>
         </div>
 
         {canCreate && (
-          <Link
-            to="/dashboard/directories/create"
-            className="flex items-center gap-2 px-5 py-2.5 text-white rounded-xl font-medium transition-all duration-300 hover:scale-105"
-            style={{
-              background: `linear-gradient(135deg, var(--plum), var(--magenta))`,
-              boxShadow: '0 4px 15px rgba(189,3,166,0.3)',
-              border: '1px solid rgba(212,175,55,0.3)'
-            }}
-          >
-            <Plus className="w-5 h-5" style={{ color: 'var(--gold-light)' }} />
-            Create Event
-          </Link>
+          <Button id="create-event-btn" asChild className="gap-2 rounded-xl">
+            <Link to="/dashboard/directories/create">
+              <Plus className="w-5 h-5" />
+              Create Event
+            </Link>
+          </Button>
         )}
       </div>
 
+      {/* Error */}
       {error && (
-        <div className="p-4 rounded-xl text-red-600" style={{ background: '#fef2f2', border: '1px solid #fecaca' }}>
-          {error}
+        <div className="flex items-center gap-3 p-4 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive">
+          <AlertCircle className="w-5 h-5 shrink-0" />
+          <p className="text-sm">{error}</p>
         </div>
       )}
 
       {/* Empty state */}
       {events.length === 0 && !error ? (
-        <div className="text-center py-20 rounded-2xl" style={{ background: 'white', border: '1px solid rgba(212,175,55,0.25)' }}>
-          <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4"
-            style={{ background: 'rgba(74,0,78,0.05)' }}>
-            <CalendarIcon className="w-10 h-10" style={{ color: 'var(--magenta)' }} />
-          </div>
-          <h3 className="font-luxury text-2xl font-semibold" style={{ color: 'var(--plum)' }}>No events found</h3>
-          <p className="text-gray-500 mt-2">There are currently no events registered in the system.</p>
-        </div>
+        <Card className="text-center py-20 border-dashed">
+          <CardContent>
+            <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 bg-primary/8 bg-muted/60">
+              <CalendarIcon className="w-10 h-10 text-primary/60" />
+            </div>
+            <h3 className="text-2xl font-semibold text-foreground">No events found</h3>
+            <p className="text-muted-foreground mt-2">There are currently no events registered in the system.</p>
+          </CardContent>
+        </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {events.map((event) => (
             <Link
               key={event.id}
               to={`/dashboard/directories/${event.id}`}
-              className="group bg-white overflow-hidden transition-all duration-500 transform hover:-translate-y-1.5 flex flex-col h-full relative"
-              style={{
-                borderRadius: '24px',
-                border: '1px solid rgba(212,175,55,0.2)',
-                boxShadow: '0 8px 32px rgba(74,0,78,0.06)'
-              }}
-              onMouseEnter={e => {
-                (e.currentTarget as HTMLElement).style.boxShadow = '0 16px 48px rgba(189,3,166,0.15)';
-                (e.currentTarget as HTMLElement).style.borderColor = 'rgba(212,175,55,0.5)';
-              }}
-              onMouseLeave={e => {
-                (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 32px rgba(74,0,78,0.06)';
-                (e.currentTarget as HTMLElement).style.borderColor = 'rgba(212,175,55,0.2)';
-              }}
+              className="group bg-card overflow-hidden rounded-2xl border border-border/60 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-500 flex flex-col h-full relative"
             >
               {/* Image / Fallback Header */}
               <div className="relative h-56 w-full overflow-hidden shrink-0">
@@ -94,63 +81,57 @@ export const EventList = () => {
                       alt={event.title}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[rgba(54,1,58,0.8)] to-transparent opacity-80" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
                   </>
                 ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center relative overflow-hidden"
-                    style={{ background: 'linear-gradient(135deg, var(--plum-dark), var(--magenta))' }}>
-                    {/* Decorative rings */}
+                  <div className="w-full h-full flex flex-col items-center justify-center relative overflow-hidden bg-gradient-to-br from-slate-800 to-slate-700">
                     <div className="absolute w-40 h-40 rounded-full border border-white/10 -top-10 -right-10" />
                     <div className="absolute w-60 h-60 rounded-full border border-white/5 -bottom-20 -left-20" />
-                    <CalendarIcon className="w-14 h-14 relative z-10 drop-shadow-lg" style={{ color: 'var(--gold)' }} />
+                    <CalendarIcon className="w-14 h-14 relative z-10 drop-shadow-lg text-primary/70" />
                   </div>
                 )}
 
                 {/* Status badge */}
                 <div className="absolute top-4 right-4 z-20">
-                  <span className="px-3.5 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest backdrop-blur-md shadow-lg text-white border border-white/20"
-                    style={{
-                      background: event.status === "approved" ? 'rgba(16,185,129,0.8)' :
-                        event.status === "rejected" ? 'rgba(239,68,68,0.8)' :
-                        `rgba(212,175,55,0.9)`,
-                      color: event.status === "pending" ? 'var(--plum)' : 'white'
-                    }}>
+                  <Badge
+                    variant={
+                      event.status === "approved" ? "success" :
+                      event.status === "rejected" ? "destructive" : "warning"
+                    }
+                    className="text-[10px] uppercase tracking-wide backdrop-blur-sm"
+                  >
                     {event.status}
-                  </span>
+                  </Badge>
                 </div>
 
                 {/* Type badge */}
                 <div className="absolute top-4 left-4 z-20">
-                  <span className="px-3.5 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest backdrop-blur-md shadow-lg border border-white/10"
-                    style={{ background: 'rgba(54,1,58,0.6)', color: 'var(--gold)' }}>
+                  <Badge variant="secondary" className="backdrop-blur-md bg-black/60 text-yellow-300 border-0 text-[10px] font-bold">
                     {event.type}
-                  </span>
+                  </Badge>
                 </div>
 
-                {/* Gold separator line */}
-                <div className="absolute bottom-0 left-0 right-0 h-1 z-20" style={{ background: 'linear-gradient(90deg, var(--gold), var(--magenta))' }} />
+                {/* Bottom accent line */}
+                <div className="absolute bottom-0 left-0 right-0 h-1 z-20 bg-gradient-to-r from-primary to-primary/50" />
               </div>
 
               {/* Content */}
-              <div className="p-6 flex-1 flex flex-col bg-white">
-                <h3 className="font-luxury text-2xl font-bold mb-4 line-clamp-1 transition-colors"
-                  style={{ color: 'var(--plum)' }}
-                  onMouseEnter={e => ((e.target as HTMLElement).style.color = 'var(--magenta)')}
-                  onMouseLeave={e => ((e.target as HTMLElement).style.color = 'var(--plum)')}>
+              <div className="p-6 flex-1 flex flex-col">
+                <h3 className="text-xl font-bold mb-4 line-clamp-1 text-foreground group-hover:text-primary transition-colors">
                   {event.title}
                 </h3>
 
-                <div className="space-y-3 mt-auto">
-                  <div className="flex items-center text-sm text-gray-600 font-medium bg-[rgba(74,0,78,0.03)] p-2.5 rounded-xl border border-[rgba(212,175,55,0.15)]">
-                    <CalendarIcon className="w-4 h-4 mr-3" style={{ color: 'var(--magenta)' }} />
-                    {new Date(event.startTime).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+                <div className="space-y-2 mt-auto">
+                  <div className="flex items-center text-sm text-muted-foreground bg-muted/40 p-2.5 rounded-xl border border-border/40">
+                    <CalendarIcon className="w-4 h-4 mr-3 text-primary/60 shrink-0" />
+                    {new Date(event.startTime).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}
                   </div>
-                  <div className="flex items-center text-sm text-gray-600 font-medium bg-[rgba(74,0,78,0.03)] p-2.5 rounded-xl border border-[rgba(212,175,55,0.15)]">
-                    <MapPin className="w-4 h-4 mr-3" style={{ color: 'var(--magenta)' }} />
+                  <div className="flex items-center text-sm text-muted-foreground bg-muted/40 p-2.5 rounded-xl border border-border/40">
+                    <MapPin className="w-4 h-4 mr-3 text-primary/60 shrink-0" />
                     <span className="line-clamp-1">{event.location}</span>
                   </div>
-                  <div className="flex items-center text-sm text-gray-600 font-medium bg-[rgba(74,0,78,0.03)] p-2.5 rounded-xl border border-[rgba(212,175,55,0.15)]">
-                    <Users className="w-4 h-4 mr-3" style={{ color: 'var(--magenta)' }} />
+                  <div className="flex items-center text-sm text-muted-foreground bg-muted/40 p-2.5 rounded-xl border border-border/40">
+                    <Users className="w-4 h-4 mr-3 text-primary/60 shrink-0" />
                     {event.capacity} Attendees
                   </div>
                 </div>

@@ -14,74 +14,82 @@ import { RegisteredEvents } from './pages/dashboard/registered';
 import { CalendarView } from './pages/dashboard/calendar';
 import { ProfileSettings } from './pages/dashboard/profile';
 import { UsersAndStaff } from './pages/dashboard/users';
+import { RootLayout } from './components/RootLayout';
 
 export const routes = createBrowserRouter([
   {
-    path: "/",
-    element: <PublicLayout />,
+    // RootLayout wraps everything so <Toaster /> lives inside the
+    // RouterProvider tree and shares React context with all pages.
+    element: <RootLayout />,
     children: [
       {
-        index: true,
-        element: <LandingPage />
-      }
-    ]
-  },
-  {
-    path: "/auth",
-    children: [
-      {
-        path: "register",
-        element: <Register />
+        path: "/",
+        element: <PublicLayout />,
+        children: [
+          {
+            index: true,
+            element: <LandingPage />
+          }
+        ]
       },
       {
-        path: "login",
-        element: <Login /> // This will now work perfectly
+        path: "/auth",
+        children: [
+          {
+            path: "register",
+            element: <Register />
+          },
+          {
+            path: "login",
+            element: <Login />
+          },
+          {
+            path: "forgot-password",
+            element: <ForgotPassword />
+          }
+        ]
       },
       {
-        path: "forgot-password",
-        element: <ForgotPassword />
-      }
-    ]
-  },
-  {
-    path: "/dashboard",
-    element: <DashboardLayout />,
-    children: [
-      {
-        index: true,
-        element: <Dashboard />
-      },
-      {
-        path: "directories",
-        element: <EventList />
-      },
-      {
-        path: "calendar",
-        element: <CalendarView />
-      },
-      {
-        path: "registered",
-        element: <RegisteredEvents />
-      },
-      {
-        path: "profile",
-        element: <ProfileSettings />
-      },
-      {
-        path: "users",
-        element: <UsersAndStaff />
-      },
-      {
-        path: "directories/create",
-        element: <CreateEvent />
-      },
-      {
-        path: "directories/:id",
-        element: <EventDetails />
-      },
-      {
-        path: "directories/:id/edit",
-        element: <UpdateEvent />
+        path: "/dashboard",
+        element: <DashboardLayout />,
+        children: [
+          {
+            index: true,
+            element: <Dashboard />
+          },
+          {
+            path: "directories",
+            element: <EventList />
+          },
+          {
+            path: "calendar",
+            element: <CalendarView />
+          },
+          {
+            path: "registered",
+            element: <RegisteredEvents />
+          },
+          {
+            path: "profile",
+            element: <ProfileSettings />
+          },
+          {
+            path: "users",
+            element: <UsersAndStaff />
+          },
+          {
+            path: "directories/create",
+            element: <CreateEvent />
+          },
+          {
+            path: "directories/:id",
+            element: <EventDetails />
+          },
+          {
+            path: "directories/:id/edit",
+            element: <UpdateEvent />
+          }
+        ]
       }
     ]
   }

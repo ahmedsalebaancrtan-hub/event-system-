@@ -35,11 +35,11 @@ func (h *EventHandler) CreateEvent(c *gin.Context) {
 
 	status, err := h.EventSvc.CreateEvent(&body)
 	if err != nil {
-		c.JSON(status, gin.H{"error": err.Error()})
+		c.JSON(status, gin.H{"success": false, "message": err.Error()})
 		return
 	}
 
-	c.JSON(status, gin.H{"message": "event submitted for approval"})
+	c.JSON(status, gin.H{"success": true, "message": "event submitted for approval"})
 }
 func (h *EventHandler) ApproveEvent(c *gin.Context) {
 
@@ -57,23 +57,24 @@ func (h *EventHandler) ApproveEvent(c *gin.Context) {
 
 	status, err := h.EventSvc.ApproveEvent(uint(eventID), adminID, body.Status)
 	if err != nil {
-		c.JSON(status, gin.H{"error": err.Error()})
+		c.JSON(status, gin.H{"success": false, "message": err.Error()})
 		return
 	}
 
-	c.JSON(status, gin.H{"message": "event status updated"})
+	c.JSON(status, gin.H{"success": true, "message": "event status updated"})
 }
 func (h *EventHandler) GetApprovedEvents(c *gin.Context) {
 
 	status, data, err := h.EventSvc.GetApprovedEvents()
 	if err != nil {
-		c.JSON(status, gin.H{"error": err.Error()})
+		c.JSON(status, gin.H{"success": false, "message": err.Error()})
 		return
 	}
 
 	c.JSON(status, gin.H{
-		"status": "success",
-		"data":   data,
+		"success": true,
+		"message": "approved events fetched successfully",
+		"data":    data,
 	})
 }
 func (h *EventHandler) Getall(c *gin.Context) {
@@ -81,16 +82,16 @@ func (h *EventHandler) Getall(c *gin.Context) {
 
 	if err != nil {
 		c.JSON(status, gin.H{
-			"is_success": false,
-			"messege":    err.Error(),
+			"success": false,
+			"message": err.Error(),
 		})
 		return
 	}
 
 	c.JSON(status, gin.H{
-		"is_sucess": true,
-		"messege":   "events fecthed sucessfully!",
-		"data":      event,
+		"success": true,
+		"message": "events fetched successfully!",
+		"data":    event,
 	})
 
 }
@@ -103,9 +104,9 @@ func (h *EventHandler) FindEventByid(c *gin.Context) {
 	if err != nil {
 
 		c.JSON(http.StatusBadRequest, gin.H{
-			"messege":    "failed to get  Event_id param",
-			"is_success": false,
-			"error":      err.Error(),
+			"success": false,
+			"message": "failed to get event_id param",
+			"error":   err.Error(),
 		})
 		return
 	}
@@ -114,16 +115,16 @@ func (h *EventHandler) FindEventByid(c *gin.Context) {
 
 	if err != nil {
 		c.JSON(status, gin.H{
-			"is_success": false,
-			"messege":    err.Error(),
+			"success": false,
+			"message": err.Error(),
 		})
 		return
 	}
 
 	c.JSON(status, gin.H{
-		"is_sucess": true,
-		"messege":   "event fecthed sucessfully!",
-		"data":      event,
+		"success": true,
+		"message": "event fetched successfully!",
+		"data":    event,
 	})
 
 }
@@ -133,23 +134,24 @@ func (h *EventHandler) UpdateEvent(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": "invalid id"})
 		return
 	}
 
 	var body dtos.UpdateEventDTO
 	if err := c.ShouldBindJSON(&body); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": err.Error()})
 		return
 	}
 
 	status, err := h.EventSvc.UpdateEvent(uint(id), &body)
 	if err != nil {
-		c.JSON(status, gin.H{"error": err.Error()})
+		c.JSON(status, gin.H{"success": false, "message": err.Error()})
 		return
 	}
 
 	c.JSON(status, gin.H{
+		"success": true,
 		"message": "event updated successfully",
 	})
 }
@@ -159,17 +161,19 @@ func (h *EventHandler) FilterEvents(c *gin.Context) {
 	var filter dtos.EventFilterDTO
 
 	if err := c.ShouldBindQuery(&filter); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": err.Error()})
 		return
 	}
 
 	status, data, err := h.EventSvc.FilterEvents(&filter)
 	if err != nil {
-		c.JSON(status, gin.H{"error": err.Error()})
+		c.JSON(status, gin.H{"success": false, "message": err.Error()})
 		return
 	}
 
 	c.JSON(status, gin.H{
-		"data": data,
+		"success": true,
+		"message": "events filtered successfully",
+		"data":    data,
 	})
 }

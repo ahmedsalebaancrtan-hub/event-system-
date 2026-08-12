@@ -4,7 +4,6 @@ import {
   CheckCircle,
   XCircle,
   RefreshCw,
-  X,
   AlertCircle,
   Mail,
   Phone,
@@ -12,6 +11,28 @@ import {
 } from "lucide-react";
 import { api, getApiErrorMessage } from "../../../lib/api";
 import type { PendingRegistration, ReviewRegistrationPayload } from "../../../types/register";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 
 interface RejectModalState {
   open: boolean;
@@ -39,8 +60,6 @@ const RejectModal = ({
     }
   }, [state.open, state.registration]);
 
-  if (!state.open || !state.registration) return null;
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!reason.trim()) {
@@ -62,89 +81,53 @@ const RejectModal = ({
     }
   };
 
-  const inputStyle = {
-    background: "rgba(74,0,78,0.03)",
-    border: "1px solid rgba(212,175,55,0.3)",
-    color: "var(--plum)",
-    outline: "none" as const,
-  };
-
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ background: "rgba(54,1,58,0.55)", backdropFilter: "blur(8px)" }}
-    >
-      <div
-        className="w-full max-w-md bg-white relative overflow-hidden"
-        style={{
-          borderRadius: "24px",
-          border: "1px solid rgba(212,175,55,0.3)",
-          boxShadow: "0 24px 64px rgba(74,0,78,0.25)",
-        }}
-      >
-        <div className="h-1" style={{ background: "linear-gradient(90deg, var(--plum-dark), var(--magenta), var(--gold))" }} />
-        <div className="p-6">
-          <div className="flex items-start justify-between mb-5">
-            <div>
-              <h3 className="font-luxury text-xl font-bold" style={{ color: "var(--plum)" }}>
-                Reject Registration
-              </h3>
-              <p className="text-sm mt-1 text-gray-500">
-                {state.registration.guest_name} — {state.registration.event?.title}
-              </p>
-            </div>
-            <button onClick={onClose} className="p-2 rounded-xl hover:bg-gray-100 transition-colors">
-              <X className="w-5 h-5 text-gray-400" />
-            </button>
+    <Dialog open={state.open} onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Reject Registration</DialogTitle>
+          <DialogDescription>
+            {state.registration?.guest_name} — {state.registration?.event?.title}
+          </DialogDescription>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="reject-reason">Rejection Reason</Label>
+            <Textarea
+              id="reject-reason"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              required
+              rows={4}
+              placeholder="Explain why this registration cannot be approved..."
+            />
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: "var(--plum)", opacity: 0.55 }}>
-                Rejection Reason
-              </label>
-              <textarea
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                required
-                rows={4}
-                placeholder="Explain why this registration cannot be approved..."
-                className="block w-full px-4 py-3 text-sm rounded-xl resize-none"
-                style={inputStyle}
-                onFocus={(e) => (e.target.style.border = "1px solid var(--magenta)")}
-                onBlur={(e) => (e.target.style.border = "1px solid rgba(212,175,55,0.3)")}
-              />
+          {error && (
+            <div className="flex items-start gap-2 p-3 rounded-xl text-sm bg-destructive/10 border border-destructive/30 text-destructive">
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+              {error}
             </div>
+          )}
 
-            {error && (
-              <div className="flex items-start gap-2 p-3 rounded-xl text-sm text-red-600" style={{ background: "#fef2f2", border: "1px solid #fecaca" }}>
-                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                {error}
-              </div>
-            )}
-
-            <div className="flex gap-3 pt-2">
-              <button
-                type="button"
-                onClick={onClose}
-                className="flex-1 py-3 rounded-xl text-sm font-medium"
-                style={{ color: "var(--plum)", border: "1px solid rgba(212,175,55,0.3)" }}
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="flex-1 py-3 rounded-xl text-sm font-medium text-white disabled:opacity-60"
-                style={{ background: "linear-gradient(135deg, #dc2626, #b91c1c)" }}
-              >
-                {isSubmitting ? "Rejecting..." : "Confirm Reject"}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
+          <div className="flex gap-3 pt-2">
+            <Button id="reject-cancel-btn" type="button" variant="outline" className="flex-1" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button
+              id="reject-confirm-btn"
+              type="submit"
+              disabled={isSubmitting}
+              variant="destructive"
+              className="flex-1"
+            >
+              {isSubmitting ? "Rejecting..." : "Confirm Reject"}
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 };
 
@@ -207,168 +190,162 @@ export const RegisteredEvents = () => {
   if (isLoading && registrations.length === 0) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-4" style={{ borderColor: "var(--magenta)" }} />
+        <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-primary" />
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="font-luxury text-4xl font-bold" style={{ color: "var(--plum)" }}>
-            Registered Attendees
-          </h1>
-          <div className="h-0.5 w-16 mt-2 mb-1" style={{ background: "linear-gradient(90deg, var(--gold), var(--magenta))" }} />
-          <p className="text-gray-500 text-sm mt-1">
+          <h1 className="text-3xl font-bold text-foreground">Registered Attendees</h1>
+          <div className="h-1 w-14 mt-2 mb-1 rounded-full bg-gradient-to-r from-primary to-primary/40" />
+          <p className="text-muted-foreground text-sm mt-1">
             Review guest applications and view approved attendees.
           </p>
         </div>
-        <button
+        <Button
+          id="registrations-refresh-btn"
+          variant="outline"
           onClick={fetchRegistrations}
           disabled={isLoading}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all"
-          style={{ color: "var(--plum)", border: "1px solid rgba(212,175,55,0.3)", background: "white" }}
+          className="gap-2"
         >
-          <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
+          <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
           Refresh
-        </button>
+        </Button>
       </div>
 
-      <div className="inline-flex rounded-xl overflow-hidden" style={{ border: "1px solid rgba(212,175,55,0.3)" }}>
-        {(["pending", "approved"] as const).map((view) => (
-          <button
-            key={view}
-            onClick={() => setActiveView(view)}
-            className="px-4 py-2 text-sm font-semibold capitalize transition-colors"
-            style={{
-              background: activeView === view ? "linear-gradient(135deg, var(--plum), var(--magenta))" : "white",
-              color: activeView === view ? "white" : "var(--plum)",
-            }}
-          >
-            {view === "pending" ? "Pending Review" : "Approved Attendees"}
-          </button>
-        ))}
-      </div>
+      {/* View tabs */}
+      <Tabs value={activeView} onValueChange={(v) => setActiveView(v as "pending" | "approved")}>
+        <TabsList>
+          <TabsTrigger id="tab-pending" value="pending">Pending Review</TabsTrigger>
+          <TabsTrigger id="tab-approved" value="approved">Approved Attendees</TabsTrigger>
+        </TabsList>
+      </Tabs>
 
+      {/* Error */}
       {error && (
-        <div className="p-4 rounded-xl text-red-600" style={{ background: "#fef2f2", border: "1px solid #fecaca" }}>
-          {error}
+        <div className="flex items-center gap-3 p-4 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive">
+          <AlertCircle className="w-5 h-5 shrink-0" />
+          <p className="text-sm">{error}</p>
         </div>
       )}
 
-      {!error && registrations.length === 0 && !isLoading ? (
-        <div
-          className="text-center py-20 bg-white rounded-2xl"
-          style={{ border: "1px solid rgba(212,175,55,0.25)", boxShadow: "0 2px 12px rgba(74,0,78,0.07)" }}
-        >
-          <CheckCircle className="w-12 h-12 mx-auto mb-4 text-green-500 opacity-70" />
-          <h3 className="font-luxury text-2xl font-semibold" style={{ color: "var(--plum)" }}>
-            All caught up
-          </h3>
-          <p className="text-gray-500 mt-2">
-            {activeView === "pending"
-              ? "There are no pending registration applications to review."
-              : "There are no approved attendees yet."}
-          </p>
-        </div>
-      ) : (
-        !error && (
-          <div
-            className="bg-white rounded-2xl overflow-hidden"
-            style={{ border: "1px solid rgba(212,175,55,0.25)", boxShadow: "0 2px 12px rgba(74,0,78,0.07)" }}
-          >
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr style={{ background: "rgba(74,0,78,0.03)", borderBottom: "1px solid rgba(212,175,55,0.2)" }}>
-                    <th className="text-left px-5 py-4 font-semibold" style={{ color: "var(--plum)" }}>Guest</th>
-                    <th className="text-left px-5 py-4 font-semibold" style={{ color: "var(--plum)" }}>Contact</th>
-                    <th className="text-left px-5 py-4 font-semibold" style={{ color: "var(--plum)" }}>Event</th>
-                    <th className="text-left px-5 py-4 font-semibold" style={{ color: "var(--plum)" }}>Date</th>
-                    <th className="text-left px-5 py-4 font-semibold" style={{ color: "var(--plum)" }}>Status</th>
-                    {activeView === "pending" && (
-                      <th className="text-right px-5 py-4 font-semibold" style={{ color: "var(--plum)" }}>Actions</th>
-                    )}
-                  </tr>
-                </thead>
-                <tbody>
-                  {registrations.map((reg) => (
-                    <tr key={reg.id} style={{ borderBottom: "1px solid rgba(212,175,55,0.12)" }}>
-                      <td className="px-5 py-4">
-                        <div className="flex items-center gap-2 font-medium" style={{ color: "var(--plum)" }}>
-                          <User className="w-4 h-4 shrink-0" style={{ color: "var(--gold)" }} />
-                          {reg.guest_name}
-                        </div>
-                      </td>
-                      <td className="px-5 py-4">
-                        <div className="space-y-1 text-gray-600">
-                          <div className="flex items-center gap-1.5">
-                            <Mail className="w-3.5 h-3.5 shrink-0" style={{ color: "var(--gold)" }} />
-                            {reg.guest_email}
-                          </div>
-                          {reg.guest_phone && (
-                            <div className="flex items-center gap-1.5">
-                              <Phone className="w-3.5 h-3.5 shrink-0" style={{ color: "var(--gold)" }} />
-                              {reg.guest_phone}
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-5 py-4 font-medium" style={{ color: "var(--plum)" }}>
-                        {reg.event?.title ?? "—"}
-                      </td>
-                      <td className="px-5 py-4 text-gray-600">
+      {/* Empty state */}
+      {!error && registrations.length === 0 && !isLoading && (
+        <Card className="text-center py-20 border-dashed">
+          <CardContent>
+            <CheckCircle className="w-12 h-12 mx-auto mb-4 text-green-500/60" />
+            <h3 className="text-2xl font-semibold text-foreground">All caught up</h3>
+            <p className="text-muted-foreground mt-2">
+              {activeView === "pending"
+                ? "There are no pending registration applications to review."
+                : "There are no approved attendees yet."}
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Table */}
+      {!error && registrations.length > 0 && (
+        <Card>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Guest</TableHead>
+                  <TableHead>Contact</TableHead>
+                  <TableHead>Event</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Status</TableHead>
+                  {activeView === "pending" && <TableHead className="text-right">Actions</TableHead>}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {registrations.map((reg) => (
+                  <TableRow key={reg.id}>
+                    <TableCell>
+                      <div className="flex items-center gap-2 font-medium text-foreground">
+                        <User className="w-4 h-4 shrink-0 text-primary/60" />
+                        {reg.guest_name}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="space-y-1 text-muted-foreground text-xs">
                         <div className="flex items-center gap-1.5">
-                          <Calendar className="w-3.5 h-3.5 shrink-0" style={{ color: "var(--gold)" }} />
+                          <Mail className="w-3.5 h-3.5 shrink-0 text-primary/50" />
+                          {reg.guest_email}
+                        </div>
+                        {reg.guest_phone && (
+                          <div className="flex items-center gap-1.5">
+                            <Phone className="w-3.5 h-3.5 shrink-0 text-primary/50" />
+                            {reg.guest_phone}
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="font-medium text-foreground">
+                      {reg.event?.title ?? "—"}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      <div className="flex items-center gap-1.5">
+                        <Calendar className="w-3.5 h-3.5 shrink-0 text-primary/50" />
+                        <span className="text-xs">
                           {reg.event?.startTime
                             ? new Date(reg.event.startTime).toLocaleDateString()
                             : new Date(reg.created_at).toLocaleDateString()}
-                        </div>
-                      </td>
-                      <td className="px-5 py-4">
-                        <span
-                          className="inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"
-                          style={{
-                            background: "rgba(212,175,55,0.15)",
-                            color: "var(--plum)",
-                            border: "1px solid rgba(212,175,55,0.35)",
-                          }}
-                        >
-                          {reg.status}
                         </span>
-                      </td>
-                      {activeView === "pending" && (
-                        <td className="px-5 py-4">
-                          <div className="flex items-center justify-end gap-2">
-                            <button
-                              onClick={() => handleApprove(reg)}
-                              disabled={actionId === reg.id}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white disabled:opacity-50"
-                              style={{ background: "linear-gradient(135deg, #059669, #10b981)" }}
-                            >
-                              <CheckCircle className="w-3.5 h-3.5" />
-                              Approve
-                            </button>
-                            <button
-                              onClick={() => setRejectModal({ open: true, registration: reg })}
-                              disabled={actionId === reg.id}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white disabled:opacity-50"
-                              style={{ background: "linear-gradient(135deg, #dc2626, #b91c1c)" }}
-                            >
-                              <XCircle className="w-3.5 h-3.5" />
-                              Reject
-                            </button>
-                          </div>
-                        </td>
-                      )}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={
+                          reg.status === "approved" ? "success" :
+                          reg.status === "pending" ? "warning" :
+                          "destructive"
+                        }
+                        className="text-[10px] uppercase tracking-wide"
+                      >
+                        {reg.status}
+                      </Badge>
+                    </TableCell>
+                    {activeView === "pending" && (
+                      <TableCell>
+                        <div className="flex items-center justify-end gap-2">
+                          <Button
+                            id={`approve-reg-${reg.id}`}
+                            size="sm"
+                            variant="success"
+                            onClick={() => handleApprove(reg)}
+                            disabled={actionId === reg.id}
+                            className="gap-1.5 text-xs"
+                          >
+                            <CheckCircle className="w-3.5 h-3.5" />
+                            Approve
+                          </Button>
+                          <Button
+                            id={`reject-reg-${reg.id}`}
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => setRejectModal({ open: true, registration: reg })}
+                            disabled={actionId === reg.id}
+                            className="gap-1.5 text-xs"
+                          >
+                            <XCircle className="w-3.5 h-3.5" />
+                            Reject
+                          </Button>
+                        </div>
+                      </TableCell>
+                    )}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </div>
-        )
+        </Card>
       )}
 
       <RejectModal

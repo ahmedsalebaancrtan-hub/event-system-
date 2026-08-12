@@ -4,6 +4,11 @@ import { ArrowLeft, Calendar, MapPin, Users, CheckCircle, Clock, Edit, XCircle }
 import { useUserStore } from "../../../store/user-store";
 import { useEventStore } from "../../../store/event-store";
 import { useRegisterStore } from "../../../store/register-store";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export const EventDetails = () => {
   const { id: eventId } = useParams<{ id: string }>();
@@ -56,19 +61,21 @@ export const EventDetails = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-4" style={{ borderColor: 'var(--magenta)' }}></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-primary" />
       </div>
     );
   }
 
   if (error || !event) {
     return (
-      <div className="text-center py-20 rounded-2xl" style={{ background: 'white', border: '1px solid rgba(212,175,55,0.25)' }}>
-        <p style={{ color: 'var(--magenta)' }} className="text-lg font-semibold">{error || "Event not found"}</p>
-        <div className="mt-4">
-          <Link to="/dashboard/directories" style={{ color: 'var(--plum)' }} className="hover:underline">Go back to directories</Link>
-        </div>
-      </div>
+      <Card className="text-center py-20 border-dashed">
+        <CardContent>
+          <p className="text-lg font-semibold text-destructive">{error || "Event not found"}</p>
+          <div className="mt-4">
+            <Link to="/dashboard/directories" className="text-primary hover:underline">Go back to directories</Link>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
@@ -98,117 +105,85 @@ export const EventDetails = () => {
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       {/* Navigation */}
-      <div className="flex items-center justify-between">
-        <Link
-          to="/dashboard/directories"
-          className="flex items-center gap-2 font-medium transition-colors hover:opacity-80"
-          style={{ color: 'var(--plum)' }}
-        >
-          <ArrowLeft className="w-5 h-5" />
-          Back to Events
-        </Link>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <Button variant="ghost" asChild className="pl-0 hover:bg-transparent text-muted-foreground hover:text-foreground">
+          <Link to="/dashboard/directories" className="gap-2">
+            <ArrowLeft className="w-5 h-5" />
+            Back to Events
+          </Link>
+        </Button>
 
         <div className="flex items-center gap-3">
           {canEdit && (
-            <Link
-              to={`/dashboard/directories/${eventId}/edit`}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium transition-all duration-300"
-              style={{
-                background: 'white',
-                color: 'var(--plum)',
-                border: '1px solid rgba(212,175,55,0.4)'
-              }}
-              onMouseEnter={e => {
-                (e.currentTarget as HTMLElement).style.borderColor = 'var(--gold)';
-                (e.currentTarget as HTMLElement).style.color = 'var(--magenta)';
-              }}
-              onMouseLeave={e => {
-                (e.currentTarget as HTMLElement).style.borderColor = 'rgba(212,175,55,0.4)';
-                (e.currentTarget as HTMLElement).style.color = 'var(--plum)';
-              }}
-            >
-              <Edit className="w-5 h-5" />
-              Edit Event
-            </Link>
+            <Button variant="outline" asChild className="gap-2">
+              <Link to={`/dashboard/directories/${eventId}/edit`}>
+                <Edit className="w-4 h-4" />
+                Edit Event
+              </Link>
+            </Button>
           )}
 
           {isAdmin && isPending && (
             <>
-              <button
+              <Button
+                variant="destructive"
                 onClick={handleReject}
                 disabled={isRejecting || isApproving}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium transition-all duration-300 disabled:opacity-70 hover:scale-105"
-                style={{
-                  background: 'rgba(239,68,68,0.1)',
-                  color: '#dc2626',
-                  border: '1px solid rgba(239,68,68,0.3)'
-                }}
+                className="gap-2"
               >
-                <XCircle className="w-5 h-5" />
+                <XCircle className="w-4 h-4" />
                 {isRejecting ? "Rejecting..." : "Reject Event"}
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="success"
                 onClick={handleApprove}
                 disabled={isApproving || isRejecting}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-white hover:scale-105 transition-all duration-300 disabled:opacity-70"
-                style={{ background: 'linear-gradient(135deg, #059669, #10b981)', boxShadow: '0 4px 14px rgba(16,185,129,0.35)' }}
+                className="gap-2"
               >
-                <CheckCircle className="w-5 h-5" />
+                <CheckCircle className="w-4 h-4" />
                 {isApproving ? "Approving..." : "Approve Event"}
-              </button>
+              </Button>
             </>
           )}
 
           {event.status === "approved" && (
-            <button
+            <Button
+              variant={isRegistered ? "destructive" : "default"}
               onClick={handleRegisterToggle}
               disabled={isRegistering}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-xl font-medium hover:scale-105 transition-all duration-300 disabled:opacity-70"
-              style={isRegistered ? {
-                background: '#fef2f2',
-                color: '#dc2626',
-                border: '1px solid #fecaca'
-              } : {
-                background: `linear-gradient(135deg, var(--plum), var(--magenta))`,
-                color: 'white',
-                boxShadow: '0 4px 15px rgba(189,3,166,0.3)',
-                border: '1px solid rgba(212,175,55,0.3)'
-              }}
+              className="gap-2"
             >
               {isRegistering ? "Processing..." : isRegistered ? "Cancel Registration" : "Register Now"}
-            </button>
+            </Button>
           )}
         </div>
       </div>
 
       {/* Hero */}
-      <div className="relative rounded-3xl overflow-hidden shadow-2xl h-80 md:h-[400px]">
+      <div className="relative rounded-3xl overflow-hidden shadow-md h-80 md:h-[400px]">
         {event.imgUrl ? (
-          <img src={event.imgUrl} alt={event.title} className="w-full h-full object-cover opacity-70" />
+          <img src={event.imgUrl} alt={event.title} className="w-full h-full object-cover" />
         ) : (
-          <div className="w-full h-full" style={{ background: `linear-gradient(135deg, var(--plum-dark), var(--magenta))` }}></div>
+          <div className="w-full h-full bg-gradient-to-br from-slate-900 to-slate-700" />
         )}
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(54,1,58,0.95), rgba(74,0,78,0.4), transparent)' }}></div>
-
-        {/* Gold bottom line */}
-        <div className="absolute bottom-0 left-0 right-0 h-0.5" style={{ background: 'linear-gradient(90deg, transparent, var(--gold), transparent)' }}></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
 
         <div className="absolute bottom-0 left-0 w-full p-8 md:p-12">
           <div className="flex items-center gap-3 mb-4">
-            <span className="px-4 py-1.5 rounded-full text-sm font-bold text-white backdrop-blur-md"
-              style={{ background: 'rgba(189,3,166,0.75)', border: '1px solid rgba(212,175,55,0.4)' }}>
+            <Badge variant="secondary" className="bg-primary/80 hover:bg-primary/90 text-white backdrop-blur-md border-0">
               {event.type}
-            </span>
-            <span className="px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-wider backdrop-blur-md"
-              style={{
-                background: event.status === "approved" ? 'rgba(16,185,129,0.8)' :
-                  event.status === "rejected" ? 'rgba(239,68,68,0.8)' : `rgba(212,175,55,0.85)`,
-                color: event.status === "pending" ? 'var(--plum)' : 'white'
-              }}>
+            </Badge>
+            <Badge
+              variant={
+                event.status === "approved" ? "success" :
+                event.status === "rejected" ? "destructive" : "warning"
+              }
+              className="uppercase tracking-wider backdrop-blur-md"
+            >
               {event.status}
-            </span>
+            </Badge>
           </div>
-          <h1 className="font-luxury text-4xl md:text-5xl font-bold text-white mb-2 tracking-tight">{event.title}</h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-2 tracking-tight">{event.title}</h1>
         </div>
       </div>
 
@@ -223,95 +198,98 @@ export const EventDetails = () => {
           { icon: MapPin, label: "Location", primary: event.location },
           { icon: Users, label: "Capacity", primary: `${event.capacity} Attendees` }
         ].map(({ icon: Icon, label, primary, secondary }) => (
-          <div key={label} className="p-6 flex items-start gap-4 bg-white"
-            style={{ borderRadius: '20px', border: '1px solid rgba(212,175,55,0.25)', boxShadow: '0 2px 12px rgba(74,0,78,0.06)' }}>
-            <div className="p-3 rounded-xl shrink-0" style={{ background: 'rgba(74,0,78,0.07)' }}>
-              <Icon className="w-6 h-6" style={{ color: 'var(--gold)' }} />
-            </div>
-            <div>
-              <p className="text-sm text-gray-500 font-medium mb-1">{label}</p>
-              <p className="font-semibold" style={{ color: 'var(--plum)' }}>{primary}</p>
-              {secondary && <p className="text-gray-500 text-sm mt-1">{secondary}</p>}
-            </div>
-          </div>
+          <Card key={label} className="overflow-hidden">
+            <CardContent className="p-6 flex items-start gap-4">
+              <div className="p-3 rounded-xl bg-primary/10 shrink-0">
+                <Icon className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground font-medium mb-1">{label}</p>
+                <p className="font-semibold text-foreground">{primary}</p>
+                {secondary && <p className="text-muted-foreground text-sm mt-1">{secondary}</p>}
+              </div>
+            </CardContent>
+          </Card>
         ))}
       </div>
 
       {/* Description */}
-      <div className="bg-white p-8" style={{ borderRadius: '24px', border: '1px solid rgba(212,175,55,0.25)', boxShadow: '0 2px 12px rgba(74,0,78,0.06)' }}>
-        <h3 className="font-luxury text-2xl font-bold mb-2" style={{ color: 'var(--plum)' }}>About This Event</h3>
-        <div className="h-0.5 w-12 mb-6" style={{ background: 'linear-gradient(90deg, var(--gold), var(--magenta))' }}></div>
-        <div className="text-gray-600 leading-relaxed whitespace-pre-wrap">
-          {event.description || "No description provided for this event."}
-        </div>
-        <div className="mt-10 pt-6 flex items-center text-sm text-gray-400 gap-1"
-          style={{ borderTop: '1px solid rgba(212,175,55,0.15)' }}>
-          <Clock className="w-4 h-4" />
-          Created on {new Date(event.createdAt).toLocaleDateString()}
-        </div>
-      </div>
+      <Card>
+        <CardContent className="p-8">
+          <h3 className="text-2xl font-bold mb-2 text-foreground">About This Event</h3>
+          <div className="h-1 w-12 mb-6 rounded-full bg-gradient-to-r from-primary to-primary/40" />
+          <div className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
+            {event.description || "No description provided for this event."}
+          </div>
+          <div className="mt-10 pt-6 flex items-center text-sm text-muted-foreground gap-1 border-t border-border/40">
+            <Clock className="w-4 h-4" />
+            Created on {new Date(event.createdAt).toLocaleDateString()}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Attendee Roster (Admin/Organizer) */}
       {canEdit && (
-        <div className="bg-white p-8" style={{ borderRadius: '24px', border: '1px solid rgba(212,175,55,0.25)', boxShadow: '0 2px 12px rgba(74,0,78,0.06)' }}>
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="font-luxury text-2xl font-bold" style={{ color: 'var(--plum)' }}>Registered Attendees</h3>
-            <span className="px-3 py-1 rounded-full text-sm font-semibold"
-              style={{ background: 'rgba(74,0,78,0.07)', color: 'var(--plum)', border: '1px solid rgba(74,0,78,0.15)' }}>
-              {attendees.length} / {event.capacity} Filled
-            </span>
-          </div>
-          <div className="h-0.5 w-12 mb-6" style={{ background: 'linear-gradient(90deg, var(--gold), var(--magenta))' }}></div>
+        <Card>
+          <CardContent className="p-8">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
+              <div>
+                <h3 className="text-2xl font-bold text-foreground">Registered Attendees</h3>
+                <div className="h-1 w-12 mt-2 rounded-full bg-gradient-to-r from-primary to-primary/40" />
+              </div>
+              <Badge variant="outline" className="px-3 py-1 font-semibold text-sm">
+                {attendees.length} / {event.capacity} Filled
+              </Badge>
+            </div>
 
-          {attendees.length === 0 ? (
-            <div className="text-center py-12 rounded-xl" style={{ background: 'rgba(74,0,78,0.03)', border: '1px dashed rgba(212,175,55,0.3)' }}>
-              <Users className="w-12 h-12 mx-auto mb-3" style={{ color: 'var(--gold)', opacity: 0.5 }} />
-              <p className="font-medium" style={{ color: 'var(--plum)', opacity: 0.5 }}>No attendees registered yet.</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--plum)', opacity: 0.5 }}>
-                    <th className="py-4 px-4">Name</th>
-                    <th className="py-4 px-4">Email</th>
-                    <th className="py-4 px-4">Role</th>
-                    <th className="py-4 px-4">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {attendees.map((attendee) => (
-                    <tr key={attendee.id} className="border-t transition-colors"
-                      style={{ borderColor: 'rgba(212,175,55,0.1)' }}>
-                      <td className="py-4 px-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs text-white shrink-0"
-                            style={{ background: `linear-gradient(135deg, var(--plum), var(--magenta))` }}>
-                            {attendee.name.charAt(0).toUpperCase()}
+            {attendees.length === 0 ? (
+              <div className="text-center py-12 rounded-xl bg-muted/40 border border-dashed border-border/60">
+                <Users className="w-12 h-12 mx-auto mb-3 text-muted-foreground/50" />
+                <p className="font-medium text-muted-foreground">No attendees registered yet.</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto mt-6">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Role</TableHead>
+                      <TableHead>Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {attendees.map((attendee) => (
+                      <TableRow key={attendee.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <Avatar className="w-8 h-8">
+                              <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">
+                                {attendee.name.charAt(0).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="font-medium text-foreground">{attendee.name}</span>
                           </div>
-                          <span className="font-medium" style={{ color: 'var(--plum)' }}>{attendee.name}</span>
-                        </div>
-                      </td>
-                      <td className="py-4 px-4 text-gray-500">{attendee.email}</td>
-                      <td className="py-4 px-4">
-                        <span className="text-xs font-semibold px-2 py-1 rounded-full"
-                          style={{ background: 'rgba(212,175,55,0.12)', color: 'var(--plum)', border: '1px solid rgba(212,175,55,0.3)' }}>
-                          {attendee.role}
-                        </span>
-                      </td>
-                      <td className="py-4 px-4">
-                        <span className="text-xs font-semibold px-2 py-1 rounded-full"
-                          style={{ background: 'rgba(16,185,129,0.1)', color: '#059669', border: '1px solid rgba(16,185,129,0.2)' }}>
-                          Registered
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">{attendee.email}</TableCell>
+                        <TableCell>
+                          <Badge variant="secondary" className="text-xs">
+                            {attendee.role}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="success" className="text-xs">
+                            Registered
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       )}
     </div>
   );
