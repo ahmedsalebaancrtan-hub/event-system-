@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Users, CheckCircle, Clock, MapPin, Activity,
-  ChevronLeft, ChevronRight, FolderOpen
+  ChevronLeft, ChevronRight, FolderOpen,
+  TrendingUp, TrendingDown
 } from "lucide-react";
 import { useUserStore } from "../../store/user-store";
 import { useEventStore } from "../../store/event-store";
@@ -241,13 +242,18 @@ export const Dashboard = () => {
             {/* Total Events */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Events</CardTitle>
-                <FolderOpen className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium text-muted-foreground">Total Events</CardTitle>
+                <Badge variant="outline" className="rounded-full px-2.5 py-0.5 text-xs font-medium flex items-center gap-1 text-foreground border-border/50">
+                  <TrendingUp className="h-3 w-3" /> +20.1%
+                </Badge>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.total}</div>
-                <p className="text-xs text-muted-foreground">
-                  +20.1% from last month
+                <div className="text-4xl font-bold tracking-tight text-foreground">{stats.total}</div>
+                <div className="mt-4 text-sm font-medium text-foreground flex items-center gap-2">
+                  Trending up this month <TrendingUp className="h-3.5 w-3.5 text-foreground" />
+                </div>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Total active event records
                 </p>
               </CardContent>
             </Card>
@@ -255,13 +261,18 @@ export const Dashboard = () => {
             {/* Approved Events */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Approved Events</CardTitle>
-                <CheckCircle className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium text-muted-foreground">Approved Events</CardTitle>
+                <Badge variant="outline" className="rounded-full px-2.5 py-0.5 text-xs font-medium flex items-center gap-1 text-foreground border-border/50">
+                  <TrendingUp className="h-3 w-3" /> +15.0%
+                </Badge>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.approved}</div>
-                <p className="text-xs text-muted-foreground">
-                  +15% from last month
+                <div className="text-4xl font-bold tracking-tight text-foreground">{stats.approved}</div>
+                <div className="mt-4 text-sm font-medium text-foreground flex items-center gap-2">
+                  Fast approval rate <TrendingUp className="h-3.5 w-3.5 text-foreground" />
+                </div>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Successfully reviewed events
                 </p>
               </CardContent>
             </Card>
@@ -269,16 +280,21 @@ export const Dashboard = () => {
             {/* Pending / Registrations */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
                   {isAdmin ? "Pending Events" : "My Registrations"}
                 </CardTitle>
-                <Activity className="h-4 w-4 text-muted-foreground" />
+                <Badge variant="outline" className="rounded-full px-2.5 py-0.5 text-xs font-medium flex items-center gap-1 text-foreground border-border/50">
+                  <TrendingDown className="h-3 w-3" /> -5.2%
+                </Badge>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
+                <div className="text-4xl font-bold tracking-tight text-foreground">
                   {isAdmin ? stats.pending : stats.registrations}
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <div className="mt-4 text-sm font-medium text-foreground flex items-center gap-2">
+                  {isAdmin ? "Fewer pending than usual" : "Consistent enrollments"} <TrendingDown className="h-3.5 w-3.5 text-foreground" />
+                </div>
+                <p className="text-sm text-muted-foreground mt-1">
                   {isAdmin ? "Requires review" : "Active enrollments"}
                 </p>
               </CardContent>
@@ -287,12 +303,17 @@ export const Dashboard = () => {
             {/* Total Capacity */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Seats Available</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium text-muted-foreground">Total Seats Available</CardTitle>
+                <Badge variant="outline" className="rounded-full px-2.5 py-0.5 text-xs font-medium flex items-center gap-1 text-foreground border-border/50">
+                  <TrendingUp className="h-3 w-3" /> +12.5%
+                </Badge>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.totalCapacity.toLocaleString()}</div>
-                <p className="text-xs text-muted-foreground">
+                <div className="text-4xl font-bold tracking-tight text-foreground">{stats.totalCapacity.toLocaleString()}</div>
+                <div className="mt-4 text-sm font-medium text-foreground flex items-center gap-2">
+                  Capacity expanding <TrendingUp className="h-3.5 w-3.5 text-foreground" />
+                </div>
+                <p className="text-sm text-muted-foreground mt-1">
                   +201 since last week
                 </p>
               </CardContent>

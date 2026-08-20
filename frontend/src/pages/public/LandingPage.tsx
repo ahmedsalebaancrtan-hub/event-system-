@@ -5,7 +5,66 @@ import { RegistrationModal } from "../../components/RegistrationModal";
 import type { AppEvent } from "../../types/event";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
+
+const EventCard = ({ event, onRegister }: { event: AppEvent; onRegister: () => void }) => {
+  const [imgError, setImgError] = useState(false);
+
+  return (
+    <Card className="flex flex-col h-full bg-card border border-border rounded-xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+      <CardHeader className="p-0 relative">
+        <div className="relative aspect-video w-full overflow-hidden shrink-0 bg-muted">
+          {event.imgUrl && !imgError ? (
+            <img
+              src={event.imgUrl}
+              alt={event.title}
+              onError={() => setImgError(true)}
+              className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700">
+              <Calendar className="w-10 h-10 text-primary/40" />
+            </div>
+          )}
+          <div className="absolute top-3 left-3 z-10">
+            <Badge variant="secondary" className="backdrop-blur-md bg-background/60 text-foreground rounded-md text-xs font-semibold border border-border">
+              {event.type}
+            </Badge>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="p-5 flex-1 flex flex-col">
+        <CardTitle className="font-semibold text-lg line-clamp-2 mb-3">
+          {event.title}
+        </CardTitle>
+        <div className="space-y-2 mt-auto">
+          <div className="flex items-center text-sm text-muted-foreground">
+            <Calendar className="w-4 h-4 mr-2 shrink-0 text-muted-foreground" />
+            {new Date(event.startTime).toLocaleDateString(undefined, {
+              weekday: "short",
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            })}
+          </div>
+          <div className="flex items-center text-sm text-muted-foreground">
+            <MapPin className="w-4 h-4 mr-2 shrink-0 text-muted-foreground" />
+            <span className="line-clamp-1">{event.location}</span>
+          </div>
+        </div>
+      </CardContent>
+      <CardFooter className="p-5 pt-0 mt-auto">
+        <Button
+          id={`register-event-${event.id}`}
+          className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-md py-2"
+          onClick={onRegister}
+        >
+          Register Now
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+};
 
 export const LandingPage = () => {
   const [events, setEvents] = useState<AppEvent[]>([]);
@@ -104,67 +163,7 @@ export const LandingPage = () => {
         {!isLoading && !error && events.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {events.map((event) => (
-              <article
-                key={event.id}
-                className="group bg-card overflow-hidden rounded-2xl border border-border/60 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-500 flex flex-col h-full"
-              >
-                {/* Event image */}
-                <div className="relative h-56 w-full overflow-hidden shrink-0">
-                  {event.imgUrl ? (
-                    <>
-                      <img
-                        src={event.imgUrl}
-                        alt={event.title}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                    </>
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-700">
-                      <Calendar className="w-14 h-14 text-primary/60" />
-                    </div>
-                  )}
-                  {/* Event type badge */}
-                  <div className="absolute top-4 left-4 z-10">
-                    <Badge variant="secondary" className="backdrop-blur-md bg-black/60 text-yellow-300 border-0 text-xs font-bold">
-                      {event.type}
-                    </Badge>
-                  </div>
-                </div>
-
-                {/* Card body */}
-                <div className="p-5 flex-1 flex flex-col">
-                  <h3 className="text-xl font-bold mb-3 line-clamp-2 text-foreground">
-                    {event.title}
-                  </h3>
-
-                  <div className="space-y-2 mt-auto">
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <Calendar className="w-4 h-4 mr-2 shrink-0 text-primary/70" />
-                      {new Date(event.startTime).toLocaleDateString(undefined, {
-                        weekday: "short",
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
-                    </div>
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <MapPin className="w-4 h-4 mr-2 shrink-0 text-primary/70" />
-                      <span className="line-clamp-1">{event.location}</span>
-                    </div>
-                  </div>
-
-                  <div className="mt-5 pt-4 border-t border-border/40">
-                    <Button
-                      id={`register-event-${event.id}`}
-                      className="w-full"
-                      onClick={() => setSelectedEvent(event)}
-                    >
-                      Register Now
-                    </Button>
-                  </div>
-                </div>
-              </article>
+              <EventCard key={event.id} event={event} onRegister={() => setSelectedEvent(event)} />
             ))}
           </div>
         )}
