@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  Users, CheckCircle, Clock, MapPin, Activity,
-  ChevronLeft, ChevronRight, FolderOpen,
+  Clock, MapPin,
   TrendingUp, TrendingDown
 } from "lucide-react";
 import { useUserStore } from "../../store/user-store";
@@ -10,161 +9,11 @@ import { useEventStore } from "../../store/event-store";
 import { useRegisterStore } from "../../store/register-store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
+import { MiniCalendar } from "./components/MiniCalendar";
+import { DonutChart } from "./components/DonutChart";
 
-// ============================================================
-// Skeleton Loader
-// ============================================================
-const Skeleton = ({ className = "" }: { className?: string }) => (
-  <div className={cn("animate-pulse rounded-xl bg-muted", className)} />
-);
 
-// ============================================================
-// Tiny Mini-Calendar Widget
-// ============================================================
-const MiniCalendar = ({
-  events,
-  selectedDate,
-  onSelect,
-}: {
-  events: { startTime: string }[];
-  selectedDate: Date;
-  onSelect: (d: Date) => void;
-}) => {
-  const [view, setView] = useState(new Date());
-  const year = view.getFullYear();
-  const month = view.getMonth();
-  const firstDay = new Date(year, month, 1).getDay();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const today = new Date();
-
-  const eventDays = new Set(
-    events
-      .filter((e) => {
-        const d = new Date(e.startTime);
-        return d.getFullYear() === year && d.getMonth() === month;
-      })
-      .map((e) => new Date(e.startTime).getDate())
-  );
-
-  const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-  const cells: (number | null)[] = Array(firstDay).fill(null);
-  for (let i = 1; i <= daysInMonth; i++) cells.push(i);
-  while (cells.length % 7 !== 0) cells.push(null);
-
-  const isSelected = (d: number) =>
-    d === selectedDate.getDate() && month === selectedDate.getMonth() && year === selectedDate.getFullYear();
-  const isToday = (d: number) =>
-    d === today.getDate() && month === today.getMonth() && year === today.getFullYear();
-
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-4">
-        <span className="font-medium text-sm">
-          {monthNames[month]} {year}
-        </span>
-        <div className="flex items-center gap-1">
-          <Button variant="outline" size="icon" className="w-7 h-7" onClick={() => setView(new Date(year, month - 1))}>
-            <ChevronLeft className="w-4 h-4" />
-          </Button>
-          <Button variant="outline" size="icon" className="w-7 h-7" onClick={() => setView(new Date(year, month + 1))}>
-            <ChevronRight className="w-4 h-4" />
-          </Button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-7 mb-2">
-        {["Su","Mo","Tu","We","Th","Fr","Sa"].map((d, i) => (
-          <div key={i} className="text-center text-[11px] font-medium text-muted-foreground">{d}</div>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-7 gap-y-1">
-        {cells.map((day, i) => (
-          <div key={i} className="flex items-center justify-center h-8">
-            {day ? (
-              <button
-                onClick={() => onSelect(new Date(year, month, day))}
-                className={cn(
-                  "w-8 h-8 flex flex-col items-center justify-center rounded-md text-xs relative transition-all",
-                  isSelected(day) && "bg-primary text-primary-foreground font-medium",
-                  isToday(day) && !isSelected(day) && "bg-accent text-accent-foreground font-medium",
-                  !isSelected(day) && !isToday(day) && "hover:bg-muted"
-                )}
-              >
-                {day}
-                {eventDays.has(day) && !isSelected(day) && (
-                  <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary" />
-                )}
-              </button>
-            ) : null}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-// ============================================================
-// Donut Chart (Pure SVG)
-// ============================================================
-const DonutChart = ({ data }: { data: { label: string; value: number; color: string }[] }) => {
-  const total = data.reduce((s, d) => s + d.value, 0) || 1;
-  let cumulative = 0;
-  const r = 54;
-  const cx = 70;
-  const cy = 70;
-  const circumference = 2 * Math.PI * r;
-
-  const segments = data.map((d) => {
-    const pct = d.value / total;
-    const dashArray = `${pct * circumference} ${circumference}`;
-    const dashOffset = -cumulative * circumference;
-    cumulative += pct;
-    return { ...d, dashArray, dashOffset, pct };
-  });
-
-  return (
-    <div className="flex items-center gap-6">
-      <div className="relative shrink-0">
-        <svg width="140" height="140" viewBox="0 0 140 140">
-          <circle cx={cx} cy={cy} r={r} fill="none" stroke="hsl(var(--muted))" strokeWidth="20" />
-          {segments.map((s, i) => (
-            <circle
-              key={i}
-              cx={cx} cy={cy} r={r}
-              fill="none"
-              stroke={s.color}
-              strokeWidth="20"
-              strokeDasharray={s.dashArray}
-              strokeDashoffset={s.dashOffset}
-              strokeLinecap="round"
-              style={{ transform: `rotate(-90deg)`, transformOrigin: `${cx}px ${cy}px`, transition: "all 0.6s ease" }}
-            />
-          ))}
-          <text x={cx} y={cy - 6} textAnchor="middle" fill="currentColor" fontSize="22" fontWeight="bold">
-            {total}
-          </text>
-          <text x={cx} y={cy + 12} textAnchor="middle" fill="hsl(var(--muted-foreground))" fontSize="10">
-            Events
-          </text>
-        </svg>
-      </div>
-      <div className="space-y-3">
-        {segments.map((s, i) => (
-          <div key={i} className="flex items-center justify-between gap-4 w-full">
-            <div className="flex items-center gap-2">
-              <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: s.color }} />
-              <p className="text-sm font-medium">{s.label}</p>
-            </div>
-            <p className="text-sm text-muted-foreground">{s.value}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
 
 // ============================================================
 // Main Dashboard Component

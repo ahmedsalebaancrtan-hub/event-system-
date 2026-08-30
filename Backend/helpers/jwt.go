@@ -13,9 +13,9 @@ func GenerateJwt(role models.Role, userID uint, sub string, ExpireIn int64, isre
 	var jwtsecret []byte
 
 	if isrefreshToken {
-		jwtsecret = []byte(config.Refresh_jwt_token)
+		jwtsecret = []byte(config.RefreshJwtToken)
 	} else {
-		jwtsecret = []byte(config.Access_jwt_Token)
+		jwtsecret = []byte(config.AccessJwtToken)
 	}
 	claims := jwt.MapClaims{
 		"userID":         userID,

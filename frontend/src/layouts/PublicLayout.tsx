@@ -95,37 +95,36 @@ export const PublicLayout = () => {
         <Outlet />
       </main>
 
-      {/* Footer */}
-      <footer className="bg-gradient-to-b from-slate-900 to-slate-950 border-t border-border/20">
+      <footer className="bg-card border-t border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
             {/* Brand */}
             <div>
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-gradient-to-br from-primary to-primary/70">
-                  <Star className="w-4 h-4 text-white fill-white" />
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-primary">
+                  <Star className="w-4 h-4 text-primary-foreground fill-primary-foreground" />
                 </div>
-                <span className="font-semibold text-white">Event-Management</span>
+                <span className="font-semibold text-foreground">Event-Management</span>
               </div>
-              <p className="text-sm leading-relaxed text-slate-400">
+              <p className="text-sm leading-relaxed text-muted-foreground">
                 Discover and register for premium seminars, workshops, and conferences — all in one elegant portal.
               </p>
             </div>
 
             {/* Quick Links */}
             <div>
-              <h4 className="font-semibold text-white mb-4">Quick Links</h4>
-              <ul className="space-y-2 text-sm text-slate-400">
-                <li><a href="/" className="hover:text-white transition-colors">Home</a></li>
-                <li><a href="/#events" className="hover:text-white transition-colors">Browse Events</a></li>
-                <li><Link to="/auth/login" className="hover:text-white transition-colors">Staff Login</Link></li>
+              <h4 className="font-semibold text-foreground mb-4">Quick Links</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><a href="/" className="hover:text-foreground transition-colors">Home</a></li>
+                <li><a href="/#events" className="hover:text-foreground transition-colors">Browse Events</a></li>
+                <li><Link to="/auth/login" className="hover:text-foreground transition-colors">Staff Login</Link></li>
               </ul>
             </div>
 
             {/* Contact */}
             <div>
-              <h4 className="font-semibold text-white mb-4">Contact</h4>
-              <ul className="space-y-3 text-sm text-slate-400">
+              <h4 className="font-semibold text-foreground mb-4">Contact</h4>
+              <ul className="space-y-3 text-sm text-muted-foreground">
                 <li className="flex items-center gap-2">
                   <Mail className="w-4 h-4 shrink-0 text-primary/80" />
                   support@eventmanagement.com
@@ -142,7 +141,7 @@ export const PublicLayout = () => {
             </div>
           </div>
 
-          <div className="mt-10 pt-6 text-center text-xs text-slate-500 border-t border-slate-800">
+          <div className="mt-10 pt-6 text-center text-xs text-muted-foreground border-t border-border">
             © {new Date().getFullYear()} Event-Management System. All rights reserved.
           </div>
         </div>

@@ -140,7 +140,7 @@ export const DashboardLayout = () => {
       {/* SIDEBAR */}
       <aside
         className={cn(
-          "fixed lg:static inset-y-0 left-0 z-50 flex flex-col bg-muted/40 shadow-sm transition-all duration-300 ease-in-out border-r border-border",
+          "fixed lg:static inset-y-0 left-0 z-50 flex flex-col bg-card transition-all duration-300 ease-in-out border-r border-border",
           isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
           isSidebarOpen ? "w-64" : "w-16 lg:w-16"
         )}
@@ -254,7 +254,7 @@ export const DashboardLayout = () => {
       <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
 
         {/* HEADER */}
-        <header className="h-14 shrink-0 px-4 md:px-6 flex items-center justify-between z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border shadow-sm">
+        <header className="h-14 shrink-0 px-4 md:px-6 flex items-center justify-between z-30 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60 border-b border-border">
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
@@ -305,7 +305,7 @@ export const DashboardLayout = () => {
         </header>
 
         {/* Page Content */}
-        <div className="flex-1 overflow-auto bg-muted/10 p-4 md:p-6 lg:p-8">
+        <div className="flex-1 overflow-auto bg-background p-4 md:p-6 lg:p-8">
           <div className="max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
             <Outlet />
           </div>

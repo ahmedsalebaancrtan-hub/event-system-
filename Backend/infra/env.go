@@ -7,57 +7,65 @@ import (
 	"github.com/joho/godotenv"
 )
 
-type AppCofig struct {
-	Port              string
-	DbUser            string
-	DbPassword        string
-	DbName            string
-	DbPort            string
-	DbHost            string
-	Access_jwt_Token  string
-	Refresh_jwt_token string
-	EMAIL_PASS        string
-	EMAIL_USER        string
+type AppConfig struct {
+	Port            string
+	DbUser          string
+	DbPassword      string
+	DbName          string
+	DbPort          string
+	DbHost          string
+	AccessJwtToken  string
+	RefreshJwtToken string
+	EmailUser       string
+	EmailPass       string
 }
 
-var Configuration AppCofig
+var Configuration AppConfig
 
 func InitEnv() {
 	err := godotenv.Load()
-
 	if err != nil {
-		log.Println("warning: .env file not found, using environment variables")
+		log.Println("Warning: .env file not found, using system environment variables")
 	}
 
 	Configuration.Port = getEnv("PORT", "5000")
+
+	Configuration.DbHost = os.Getenv("DB_HOST")
+	Configuration.DbPort = getEnv("DB_PORT", "5432")
 	Configuration.DbUser = os.Getenv("DB_USER")
 	Configuration.DbPassword = os.Getenv("DB_PASSWORD")
 	Configuration.DbName = os.Getenv("DB_NAME")
-	Configuration.DbPort = os.Getenv("DB_PORT")
-	Configuration.DbHost = os.Getenv("DB_HOST")
-	Configuration.Access_jwt_Token = os.Getenv("Access_jwt_Token")
-	Configuration.Refresh_jwt_token = os.Getenv("Refresh_jwt_Token")
-	Configuration.EMAIL_USER = os.Getenv("EMAIL_USER")
-	Configuration.EMAIL_PASS = os.Getenv("EMAIL_PASS")
+
+	Configuration.AccessJwtToken = os.Getenv("Access_jwt_Token")
+	Configuration.RefreshJwtToken = os.Getenv("Refresh_jwt_Token")
+
+	Configuration.EmailUser = os.Getenv("EMAIL_USER")
+	Configuration.EmailPass = os.Getenv("EMAIL_PASS")
 
 	requiredVars := map[string]string{
+		"DB_HOST":           Configuration.DbHost,
 		"DB_USER":           Configuration.DbUser,
 		"DB_PASSWORD":       Configuration.DbPassword,
 		"DB_NAME":           Configuration.DbName,
-		"Access_jwt_Token":  Configuration.Access_jwt_Token,
-		"EMAIL_USER":        Configuration.EMAIL_USER,
-		"EMAIL_PASS":        Configuration.EMAIL_PASS,
+		"Access_jwt_Token":  Configuration.AccessJwtToken,
+		"Refresh_jwt_Token": Configuration.RefreshJwtToken,
+		"EMAIL_USER":        Configuration.EmailUser,
+		"EMAIL_PASS":        Configuration.EmailPass,
 	}
 
-	for key, val := range requiredVars {
-		if val == "" {
-			log.Fatalf("CRITICAL ERROR: Environment variable %s is not set", key)
+	for key, value := range requiredVars {
+		if value == "" {
+			log.Fatalf(
+				"CRITICAL ERROR: Environment variable %s is not set",
+				key,
+			)
 		}
 	}
 }
 
-func getEnv(key string, fallback string) string {
+func getEnv(key, fallback string) string {
 	value := os.Getenv(key)
+
 	if value == "" {
 		return fallback
 	}

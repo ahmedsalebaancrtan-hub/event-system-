@@ -67,7 +67,7 @@ func Authenticated() gin.HandlerFunc {
 					return nil, jwt.ErrSignatureInvalid
 				}
 
-				return []byte(infra.Configuration.Access_jwt_Token), nil
+				return []byte(infra.Configuration.AccessJwtToken), nil
 			},
 		)
 
@@ -151,7 +151,7 @@ func RefreshAuthenticated() gin.HandlerFunc {
 					return nil, jwt.ErrSignatureInvalid
 				}
 
-				return []byte(infra.Configuration.Refresh_jwt_token), nil
+				return []byte(infra.Configuration.RefreshJwtToken), nil
 			},
 		)
 
