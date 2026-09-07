@@ -159,3 +159,28 @@ func (h *RegisterHandler) GetApprovedEventsForCurrentGuest(c *gin.Context) {
 		"data":    data,
 	})
 }
+
+func (h *RegisterHandler) FilterRegistrations(c *gin.Context) {
+	var filter dtos.RegistrationFilterDTO
+
+	if err := c.ShouldBindQuery(&filter); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": err.Error()})
+		return
+	}
+
+	status, data, total, err := h.Service.FilterRegistrations(&filter)
+	if err != nil {
+		c.JSON(status, gin.H{"success": false, "message": err.Error()})
+		return
+	}
+
+	page, limit, _ := dtos.ResolvePagination(filter.Page, filter.Limit, 10)
+	meta := dtos.BuildMeta(page, limit, total)
+
+	c.JSON(status, gin.H{
+		"success":    true,
+		"message":    "registrations filtered successfully",
+		"data":       data,
+		"pagination": meta,
+	})
+}

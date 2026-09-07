@@ -251,9 +251,14 @@ func (svc *UserService) Enable2FA(email string, code string, secret string) erro
 }
 
 // GETTERS
-func (svc *UserService) GetAllUsers() (int, []models.User, error) {
-	data, err := svc.Repo.GetAllusers()
-	return http.StatusOK, data, err
+func (svc *UserService) GetAllUsers(filter dtos.UserFilterDTO) (int, []models.User, int64, error) {
+
+	_, limit, offset := dtos.ResolvePagination(filter.Page, filter.Limit, 10)
+	users, total, err := svc.Repo.GetAllusers(filter, limit, offset)
+	if err != nil {
+		return http.StatusInternalServerError, nil, 0, err
+	}
+	return http.StatusOK, users, total, nil
 }
 
 func (svc *UserService) GetUserById(id uint) (int, models.User, error) {

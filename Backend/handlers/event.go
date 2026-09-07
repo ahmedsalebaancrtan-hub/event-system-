@@ -78,7 +78,10 @@ func (h *EventHandler) GetApprovedEvents(c *gin.Context) {
 	})
 }
 func (h *EventHandler) Getall(c *gin.Context) {
-	status, event, err := h.EventSvc.Getall()
+	var p dtos.PaginationDTO
+	_ = c.ShouldBindQuery(&p) // ignore err, defaults are handled
+
+	status, events, total, err := h.EventSvc.Getall(p.Page, p.Limit)
 
 	if err != nil {
 		c.JSON(status, gin.H{
@@ -88,10 +91,14 @@ func (h *EventHandler) Getall(c *gin.Context) {
 		return
 	}
 
+	page, limit, _ := dtos.ResolvePagination(p.Page, p.Limit, 8)
+	meta := dtos.BuildMeta(page, limit, total)
+
 	c.JSON(status, gin.H{
-		"success": true,
-		"message": "events fetched successfully!",
-		"data":    event,
+		"success":    true,
+		"message":    "events fetched successfully!",
+		"data":       events,
+		"pagination": meta,
 	})
 
 }
@@ -165,15 +172,19 @@ func (h *EventHandler) FilterEvents(c *gin.Context) {
 		return
 	}
 
-	status, data, err := h.EventSvc.FilterEvents(&filter)
+	status, data, total, err := h.EventSvc.FilterEvents(&filter)
 	if err != nil {
 		c.JSON(status, gin.H{"success": false, "message": err.Error()})
 		return
 	}
 
+	page, limit, _ := dtos.ResolvePagination(filter.Page, filter.Limit, 8)
+	meta := dtos.BuildMeta(page, limit, total)
+
 	c.JSON(status, gin.H{
-		"success": true,
-		"message": "events filtered successfully",
-		"data":    data,
+		"success":    true,
+		"message":    "events filtered successfully",
+		"data":       data,
+		"pagination": meta,
 	})
 }

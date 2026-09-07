@@ -119,14 +119,7 @@ export const LoginForm = () => {
         </form>
       </CardContent>
 
-      <CardFooter className="flex justify-center border-t border-border/40 p-4">
-        <p className="text-sm text-muted-foreground">
-          Don't have an account?{" "}
-          <Link to="/auth/register" className="font-semibold text-primary hover:underline">
-            Create one
-          </Link>
-        </p>
-      </CardFooter>
+
     </Card>
   );
 };

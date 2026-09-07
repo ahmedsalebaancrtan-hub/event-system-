@@ -30,6 +30,8 @@ type EventFilterDTO struct {
 	StartDate string `form:"start_time"`
 	EndDate   string `form:"end_time"`
 	Search    string `form:"search"`
+	Status    string `form:"status"`
+	PaginationDTO
 }
 
 type ApproveEventDTO struct {

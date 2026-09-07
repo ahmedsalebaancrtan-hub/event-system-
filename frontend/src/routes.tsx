@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { Dashboard } from './pages/dashboard';
 import { Register } from './pages/authentication/register';
 import { Login } from './pages/authentication/login';
@@ -37,7 +37,7 @@ export const routes = createBrowserRouter([
         children: [
           {
             path: "register",
-            element: <Register />
+            element: <Navigate to="/auth/login" replace />
           },
           {
             path: "login",

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Clock, MapPin,
-  TrendingUp, TrendingDown
+  TrendingUp, TrendingDown, Download
 } from "lucide-react";
 import { useUserStore } from "../../store/user-store";
 import { useEventStore } from "../../store/event-store";
@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MiniCalendar } from "./components/MiniCalendar";
 import { DonutChart } from "./components/DonutChart";
+import { downloadCSV, downloadPDF, isoDate, titleCase, capitalize, slugify } from "../../lib/export-utils";
 
 
 
@@ -72,14 +73,83 @@ export const Dashboard = () => {
     return <Badge variant="outline" className="border-destructive/50 text-destructive bg-destructive/10">Rejected</Badge>;
   };
 
+  const exportSummaryCSV = () => {
+    const headers = ["Title", "Event Type", "Status", "Total Capacity", "Location", "Start Date", "End Date"];
+    const rows = events.map((e) => [
+      e.title,
+      titleCase(e.type),
+      capitalize(e.status),
+      e.capacity,
+      e.location,
+      new Date(e.startTime).toLocaleDateString("en-GB"),
+      new Date(e.endTime).toLocaleDateString("en-GB"),
+    ]);
+    downloadCSV(headers, rows, `Event_Report_${isoDate()}.csv`);
+  };
+
+  const exportSummaryPDF = () => {
+    downloadPDF({
+      title: "Event Summary Report",
+      subtitle: `All events as of ${new Date().toLocaleDateString("en-GB")}`,
+      generatedBy: user?.name,
+      summaryItems: [
+        { label: "Total Events", value: stats.total },
+        { label: "Approved", value: stats.approved },
+        { label: "Pending Review", value: stats.pending },
+        { label: "Total Capacity", value: stats.totalCapacity },
+      ],
+      columns: [
+        { header: "Title",         dataKey: "title" },
+        { header: "Event Type",    dataKey: "type" },
+        { header: "Status",        dataKey: "status" },
+        { header: "Capacity",      dataKey: "capacity" },
+        { header: "Location",      dataKey: "location" },
+        { header: "Start Date",    dataKey: "startDate" },
+        { header: "End Date",      dataKey: "endDate" },
+      ],
+      rows: events.map((e) => ({
+        title:     e.title,
+        type:      titleCase(e.type),
+        status:    capitalize(e.status),
+        capacity:  e.capacity,
+        location:  e.location,
+        startDate: new Date(e.startTime).toLocaleDateString("en-GB"),
+        endDate:   new Date(e.endTime).toLocaleDateString("en-GB"),
+      })),
+      filename: `Event_Report_${isoDate()}.pdf`,
+    });
+  };
+
   return (
     <div className="flex-1 space-y-4">
       {/* ─── HEADER ─── */}
-      <div className="mb-6">
-        <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-        <p className="text-muted-foreground">
-          Overview of your event management metrics.
-        </p>
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+          <p className="text-muted-foreground">
+            Overview of your event management metrics.
+          </p>
+        </div>
+        {isAdmin && events.length > 0 && (
+          <div className="flex items-center gap-2">
+            <button
+              id="export-summary-csv-btn"
+              onClick={exportSummaryCSV}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border border-border bg-card hover:bg-muted transition-colors text-foreground"
+            >
+              <Download className="w-4 h-4" />
+              Export CSV
+            </button>
+            <button
+              id="export-summary-pdf-btn"
+              onClick={exportSummaryPDF}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border border-border bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+            >
+              <Download className="w-4 h-4" />
+              Export PDF
+            </button>
+          </div>
+        )}
       </div>
 
       {/* ─── STAT CARDS ROW ─── */}

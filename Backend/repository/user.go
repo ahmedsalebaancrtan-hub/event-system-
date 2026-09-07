@@ -3,6 +3,7 @@ package repository
 import (
 	"errors"
 
+	"github.com/mubarik/EVENT_MANBAGEMENT_SYSTEM/dtos"
 	"github.com/mubarik/EVENT_MANBAGEMENT_SYSTEM/models"
 	"gorm.io/gorm"
 )
@@ -25,10 +26,24 @@ func (r *UserRepo) GetUserByEmail(email string) (models.User, error) {
 	return user, err
 }
 
-func (r *UserRepo) GetAllusers() ([]models.User, error) {
+func (r *UserRepo) GetAllusers(filter dtos.UserFilterDTO, limit, offset int) ([]models.User, int64, error) {
 	var users []models.User
-	err := r.DB.Find(&users).Error
-	return users, err
+	var total int64
+	query := r.DB.Model(&models.User{})
+
+	if filter.Role != "" && filter.Role != "ALL" {
+		query = query.Where("role = ?", filter.Role)
+	}
+	if filter.Search != "" {
+		query = query.Where("LOWER(name) LIKE LOWER(?) OR LOWER(email) LIKE LOWER(?)", "%"+filter.Search+"%", "%"+filter.Search+"%")
+	}
+
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	err := query.Limit(limit).Offset(offset).Find(&users).Error
+	return users, total, err
 }
 
 func (r *UserRepo) GetUserbyId(id uint) (models.User, error) {

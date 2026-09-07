@@ -11,3 +11,10 @@ type ReviewRegistrationDTO struct {
 	Status          string `json:"status" binding:"required,oneof=approved rejected"`
 	RejectionReason string `json:"rejection_reason"`
 }
+
+type RegistrationFilterDTO struct {
+	Status  string `form:"status"`
+	EventID string `form:"event_id"`
+	Search  string `form:"search"`
+	PaginationDTO
+}

@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"github.com/mubarik/EVENT_MANBAGEMENT_SYSTEM/dtos"
 	"github.com/mubarik/EVENT_MANBAGEMENT_SYSTEM/models"
 	"gorm.io/gorm"
 )
@@ -86,4 +87,27 @@ func (r *RegistersRepo) GetRegistrationByEmailAndEvent(eventID uint, email strin
 		Where("event_id = ? AND guest_email = ?", eventID, email).
 		First(&registration).Error
 	return registration, err
+}
+
+func (r *RegistersRepo) FilterRegistrations(filter dtos.RegistrationFilterDTO, limit, offset int) ([]models.EventRegistration, int64, error) {
+	var registrations []models.EventRegistration
+	var total int64
+	query := r.DB.Preload("Event").Model(&models.EventRegistration{})
+
+	if filter.Status != "" {
+		query = query.Where("LOWER(status) = LOWER(?)", filter.Status)
+	}
+	if filter.EventID != "" && filter.EventID != "all" {
+		query = query.Where("event_id = ?", filter.EventID)
+	}
+	if filter.Search != "" {
+		query = query.Where("LOWER(guest_name) LIKE LOWER(?) OR LOWER(guest_email) LIKE LOWER(?)", "%"+filter.Search+"%", "%"+filter.Search+"%")
+	}
+
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	err := query.Limit(limit).Offset(offset).Find(&registrations).Error
+	return registrations, total, err
 }

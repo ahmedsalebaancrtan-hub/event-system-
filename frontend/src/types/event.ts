@@ -27,3 +27,12 @@ export interface CreateEventDTO {
   img_url: string;
   auto_approve: boolean;
 }
+
+export interface PaginationMeta {
+  current_page: number;
+  per_page: number;
+  total_records: number;
+  total_pages: number;
+  has_next: boolean;
+  has_prev: boolean;
+}

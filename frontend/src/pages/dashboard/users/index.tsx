@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import {
-  Users, Search, UserCheck, UserX, RefreshCw, X, AlertCircle
+  Users, Search, UserCheck, UserX, RefreshCw, X, AlertCircle, UserPlus
 } from "lucide-react";
 import { api } from "../../../lib/api";
 import type { User } from "../../../types/user";
@@ -10,6 +10,9 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { UserCard } from "./components/UserCard";
 import { ResetPasswordModal, type ResetModalState } from "./components/ResetPasswordModal";
+import { CreateUserModal } from "./components/CreateUserModal";
+import type { PaginationMeta } from "../../../types/event";
+import { DataTablePagination } from "../../../components/pagination/DataTablePagination";
 
 // ─── Types ────────────────────────────────────────────────────
 type Role = "ALL" | "ADMIN" | "ORGANIZER" | "STAFF";
@@ -22,12 +25,23 @@ export const UsersAndStaff = () => {
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<Role>("ALL");
   const [resetModal, setResetModal] = useState<ResetModalState>({ open: false, user: null });
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [pagination, setPagination] = useState<PaginationMeta | null>(null);
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (p = page, l = limit) => {
     setIsLoading(true); setError("");
     try {
-      const res = await api.get("/users/allusers");
+      const params = new URLSearchParams();
+      if (roleFilter !== "ALL") params.append("role", roleFilter);
+      if (search) params.append("search", search);
+      params.append("page", p.toString());
+      params.append("limit", l.toString());
+      
+      const res = await api.get(`/users/allusers?${params.toString()}`);
       setUsers(res.data.data || res.data || []);
+      setPagination(res.data.pagination || null);
     } catch (err: any) {
       setError(err.response?.data?.message || "Failed to load users.");
     } finally {
@@ -35,17 +49,14 @@ export const UsersAndStaff = () => {
     }
   };
 
-  useEffect(() => { fetchUsers(); }, []);
+  useEffect(() => { 
+    const timer = setTimeout(() => {
+      fetchUsers(page, limit); 
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [roleFilter, search, page, limit]);
 
-  const filtered = useMemo(() =>
-    users.filter(u => {
-      const matchRole = roleFilter === "ALL" || u.role === roleFilter;
-      const q = search.toLowerCase();
-      const matchSearch = !q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
-      return matchRole && matchSearch;
-    }),
-    [users, search, roleFilter]
-  );
+  const filtered = users; // Now using backend filtered data
 
   const stats = useMemo(() => ({
     total: users.length,
@@ -67,10 +78,16 @@ export const UsersAndStaff = () => {
             <div className="h-1 w-14 mt-2 mb-1 rounded-full bg-gradient-to-r from-primary to-primary/40" />
             <p className="text-muted-foreground text-sm">Manage all registered users and team members across the system.</p>
           </div>
-          <Button onClick={fetchUsers} variant="outline" className="gap-2">
-            <RefreshCw className="w-4 h-4" />
-            Refresh
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button onClick={() => fetchUsers(page, limit)} variant="outline" className="gap-2">
+              <RefreshCw className="w-4 h-4" />
+              Refresh
+            </Button>
+            <Button onClick={() => setCreateModalOpen(true)} className="gap-2">
+              <UserPlus className="w-4 h-4" />
+              Create User
+            </Button>
+          </div>
         </div>
 
         {/* Stats Row */}
@@ -102,12 +119,12 @@ export const UsersAndStaff = () => {
               <Input
                 type="text"
                 value={search}
-                onChange={e => setSearch(e.target.value)}
+                onChange={e => { setSearch(e.target.value); setPage(1); }}
                 placeholder="Search by name or email..."
                 className="pl-9"
               />
               {search && (
-                <button onClick={() => setSearch("")} className="absolute right-3 text-muted-foreground hover:text-foreground">
+                <button onClick={() => { setSearch(""); setPage(1); }} className="absolute right-3 text-muted-foreground hover:text-foreground">
                   <X className="w-4 h-4" />
                 </button>
               )}
@@ -119,7 +136,7 @@ export const UsersAndStaff = () => {
                 <Button 
                   key={role} 
                   variant={roleFilter === role ? "default" : "outline"}
-                  onClick={() => setRoleFilter(role)}
+                  onClick={() => { setRoleFilter(role); setPage(1); }}
                   className="rounded-full text-xs h-9"
                 >
                   {role === "ALL" ? `All (${stats.total})` :
@@ -173,18 +190,35 @@ export const UsersAndStaff = () => {
           ) : (
             <>
               <p className="text-xs font-semibold uppercase tracking-widest mb-2 text-muted-foreground">
-                Showing {filtered.length} of {users.length} users
+                Showing {filtered.length} of {pagination?.total_records || users.length} users
               </p>
               {filtered.map(u => (
                 <UserCard key={u.id} user={u} onReset={(u) => setResetModal({ open: true, user: u })} />
               ))}
             </>
           )}
+
+          {!isLoading && filtered.length > 0 && pagination && (
+            <Card className="mt-4">
+              <DataTablePagination
+                meta={pagination}
+                onPageChange={setPage}
+                onLimitChange={(newLimit) => {
+                  setLimit(newLimit);
+                  setPage(1);
+                }}
+                defaultLimit={10}
+              />
+            </Card>
+          )}
         </div>
       </div>
 
       {/* Reset Password Modal */}
       <ResetPasswordModal state={resetModal} onClose={() => setResetModal({ open: false, user: null })} />
+
+      {/* Create User Modal */}
+      <CreateUserModal open={createModalOpen} onClose={() => setCreateModalOpen(false)} onSuccess={() => fetchUsers()} />
     </>
   );
 };

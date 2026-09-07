@@ -79,12 +79,27 @@ func (h *UserHandler) ResetPassword(c *gin.Context) {
 }
 
 func (h *UserHandler) GetAllUsers(c *gin.Context) {
-	status, data, err := h.Usersvc.GetAllUsers()
+	var filter dtos.UserFilterDTO
+	if err := c.ShouldBindQuery(&filter); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": err.Error()})
+		return
+	}
+
+	status, data, total, err := h.Usersvc.GetAllUsers(filter)
 	if err != nil {
 		c.JSON(status, gin.H{"success": false, "message": err.Error()})
 		return
 	}
-	c.JSON(status, gin.H{"success": true, "message": "Users fetched successfully", "data": data})
+
+	page, limit, _ := dtos.ResolvePagination(filter.Page, filter.Limit, 10)
+	meta := dtos.BuildMeta(page, limit, total)
+
+	c.JSON(status, gin.H{
+		"success":    true,
+		"message":    "Users fetched successfully",
+		"data":       data,
+		"pagination": meta,
+	})
 }
 
 func (h *UserHandler) GetUserById(c *gin.Context) {

@@ -229,7 +229,7 @@ export const EventDetails = () => {
 
       {/* Attendee Roster (Admin/Organizer) */}
       {canEdit && (
-        <AttendeeRoster attendees={attendees} capacity={event.capacity} />
+        <AttendeeRoster attendees={attendees} capacity={event.capacity} eventTitle={event.title} />
       )}
     </div>
   );

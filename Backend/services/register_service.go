@@ -229,3 +229,13 @@ func (svc *RegisterService) sendReviewEmail(registration models.EventRegistratio
 
 	return nil
 }
+
+func (svc *RegisterService) FilterRegistrations(filter *dtos.RegistrationFilterDTO) (int, []models.EventRegistration, int64, error) {
+	_, limit, offset := dtos.ResolvePagination(filter.Page, filter.Limit, 10)
+	registrations, total, err := svc.Repo.FilterRegistrations(*filter, limit, offset)
+	if err != nil {
+		return http.StatusInternalServerError, nil, 0, err
+	}
+
+	return http.StatusOK, registrations, total, nil
+}

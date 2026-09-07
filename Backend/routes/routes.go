@@ -15,7 +15,7 @@ func RegisterRoute(r *gin.Engine) {
 	UserGroup := ApiGroup.Group("/users")
 
 	{
-		UserGroup.POST("/create", UserHandler.CreateUser)
+		UserGroup.POST("/create", middlewares.Authenticated(), middlewares.RequiredRole("ADMIN"), UserHandler.CreateUser)
 		UserGroup.POST("/login", UserHandler.LoginUser)
 		UserGroup.POST("/verify-2fa-login", UserHandler.Verify2FALogin)
 		UserGroup.GET("/user/:userId", middlewares.Authenticated(), middlewares.RequiredRole("ORGANIZER", "ADMIN"), UserHandler.GetUserById)
@@ -53,6 +53,7 @@ func RegisterRoute(r *gin.Engine) {
 		RegistrationGroup.GET("/pending", RegisterHandler.GetPendingRegistrations)
 		RegistrationGroup.GET("/approved", RegisterHandler.GetApprovedRegistrations)
 		RegistrationGroup.PATCH("/:id/review", RegisterHandler.ReviewRegistration)
+		RegistrationGroup.GET("/search", RegisterHandler.FilterRegistrations)
 	}
 
 	legacyRegisterGroup := ApiGroup.Group("/registers")

@@ -87,15 +87,15 @@ func (svc *EventSvc) ApproveEvent(eventID uint, adminID uint, status string) (in
 	return http.StatusOK, nil
 }
 
-func (svc *EventSvc) Getall() (int, []models.Event, error) {
-
-	events, err := svc.Repo.GetallEvents()
+func (svc *EventSvc) Getall(page, limit int) (int, []models.Event, int64, error) {
+	_, limit, offset := dtos.ResolvePagination(page, limit, 8)
+	events, total, err := svc.Repo.GetallEvents(limit, offset)
 
 	if err != nil {
-		return http.StatusInternalServerError, nil, err
+		return http.StatusInternalServerError, nil, 0, err
 	}
 
-	return http.StatusOK, events, nil
+	return http.StatusOK, events, total, nil
 }
 
 func (svc *EventSvc) GetEventById(id uint) (int, models.Event, error) {
@@ -190,7 +190,7 @@ func (svc *EventSvc) UpdateEvent(id uint, data *dtos.UpdateEventDTO) (int, error
 
 	return http.StatusOK, nil
 }
-func (svc *EventSvc) FilterEvents(filter *dtos.EventFilterDTO) (int, []models.Event, error) {
+func (svc *EventSvc) FilterEvents(filter *dtos.EventFilterDTO) (int, []models.Event, int64, error) {
 
 	layout := "2006-01-02"
 
@@ -201,7 +201,7 @@ func (svc *EventSvc) FilterEvents(filter *dtos.EventFilterDTO) (int, []models.Ev
 	if filter.StartDate != "" {
 		parsedStart, err := time.Parse(layout, filter.StartDate)
 		if err != nil {
-			return http.StatusBadRequest, nil, errors.New("invalid start_date format (YYYY-MM-DD)")
+			return http.StatusBadRequest, nil, 0, errors.New("invalid start_date format (YYYY-MM-DD)")
 		}
 		startDate = &parsedStart
 	}
@@ -210,7 +210,7 @@ func (svc *EventSvc) FilterEvents(filter *dtos.EventFilterDTO) (int, []models.Ev
 	if filter.EndDate != "" {
 		parsedEnd, err := time.Parse(layout, filter.EndDate)
 		if err != nil {
-			return http.StatusBadRequest, nil, errors.New("invalid end_date format (YYYY-MM-DD)")
+			return http.StatusBadRequest, nil, 0, errors.New("invalid end_date format (YYYY-MM-DD)")
 		}
 
 		// extend to end of day
@@ -220,14 +220,16 @@ func (svc *EventSvc) FilterEvents(filter *dtos.EventFilterDTO) (int, []models.Ev
 
 	// 🔴 important validation
 	if startDate != nil && endDate != nil && endDate.Before(*startDate) {
-		return http.StatusBadRequest, nil, errors.New("end_date cannot be before start_date")
+		return http.StatusBadRequest, nil, 0, errors.New("end_date cannot be before start_date")
 	}
+
+	_, limit, offset := dtos.ResolvePagination(filter.Page, filter.Limit, 8)
 
 	// call repo with parsed values
-	data, err := svc.Repo.FilterEvents(*filter, startDate, endDate)
+	data, total, err := svc.Repo.FilterEvents(*filter, startDate, endDate, limit, offset)
 	if err != nil {
-		return http.StatusInternalServerError, nil, err
+		return http.StatusInternalServerError, nil, 0, err
 	}
 
-	return http.StatusOK, data, nil
+	return http.StatusOK, data, total, nil
 }

@@ -36,3 +36,9 @@ type ResetPasswordDTO struct {
 	OTP         string `json:"otp" binding:"required,len=6"`
 	NewPassword string `json:"new_password" binding:"required,min=6"`
 }
+
+type UserFilterDTO struct {
+	Role   string `form:"role"`
+	Search string `form:"search"`
+	PaginationDTO
+}

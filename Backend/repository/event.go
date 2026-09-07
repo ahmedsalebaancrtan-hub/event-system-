@@ -23,15 +23,23 @@ func (r *EventRepo) CreateEvent(event models.Event) error {
 	return r.DB.Create(&event).Error
 }
 
-func (r *EventRepo) GetallEvents() ([]models.Event, error) {
+func (r *EventRepo) GetallEvents(limit, offset int) ([]models.Event, int64, error) {
 	var events []models.Event
+	var total int64
 
-	err := r.DB.Find(&events).Error
+	// Get total count first
+	err := r.DB.Model(&models.Event{}).Count(&total).Error
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
-	return events, nil
+	// Get paginated data
+	err = r.DB.Limit(limit).Offset(offset).Find(&events).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return events, total, nil
 
 }
 
@@ -65,9 +73,12 @@ func (r *EventRepo) FilterEvents(
 	filter dtos.EventFilterDTO,
 	startDate *time.Time,
 	endDate *time.Time,
-) ([]models.Event, error) {
+	limit int,
+	offset int,
+) ([]models.Event, int64, error) {
 
 	var events []models.Event
+	var total int64
 	query := r.DB.Model(&models.Event{})
 
 	if filter.Location != "" {
@@ -82,6 +93,10 @@ func (r *EventRepo) FilterEvents(
 		query = query.Where("LOWER(title) LIKE LOWER(?)", "%"+filter.Search+"%")
 	}
 
+	if filter.Status != "" {
+		query = query.Where("LOWER(status) = LOWER(?)", filter.Status)
+	}
+
 	// 🔥 Correct overlap logic
 	if startDate != nil && endDate != nil {
 		query = query.Where("start_time <= ? AND end_time >= ?", *endDate, *startDate)
@@ -91,6 +106,12 @@ func (r *EventRepo) FilterEvents(
 		query = query.Where("start_time <= ?", *endDate)
 	}
 
-	err := query.Find(&events).Error
-	return events, err
+	// Count total records for this query
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	// Paginate the query
+	err := query.Limit(limit).Offset(offset).Find(&events).Error
+	return events, total, err
 }
