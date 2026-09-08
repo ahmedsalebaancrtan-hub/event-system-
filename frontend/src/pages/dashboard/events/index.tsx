@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
-  Plus, MapPin, Calendar as CalendarIcon, Users, AlertCircle,
-  Search, X, Filter, SlidersHorizontal,
+  Plus, Calendar as CalendarIcon, AlertCircle,
+  Search, X, Filter, SlidersHorizontal, MoreHorizontal,
+  Eye, Pencil, CheckCircle, XCircle, Trash2,
 } from "lucide-react";
 import { useUserStore } from "../../../store/user-store";
 import { useEventStore } from "../../../store/event-store";
@@ -10,8 +11,18 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from "@/components/ui/table";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { DataTablePagination } from "../../../components/pagination/DataTablePagination";
+import type { AppEvent } from "../../../types/event";
 
 // ─── Helpers ──────────────────────────────────────────────────
 const EVENT_TYPES = ["CONFERENCE", "WORKSHOP", "SEMINAR"] as const;
@@ -34,17 +45,162 @@ const DEFAULT_FILTERS: FilterState = {
   dateRange: "all",
 };
 
+// ─── Status Badge ──────────────────────────────────────────────
+const StatusBadge = ({ status }: { status: AppEvent["status"] }) => {
+  if (status === "approved")
+    return (
+      <Badge variant="outline" className="border-emerald-500/40 text-emerald-500 bg-emerald-500/10 gap-1 uppercase tracking-wide text-[10px] font-bold">
+        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 inline-block" />
+        Approved
+      </Badge>
+    );
+  if (status === "pending")
+    return (
+      <Badge variant="outline" className="border-amber-500/40 text-amber-500 bg-amber-500/10 gap-1 uppercase tracking-wide text-[10px] font-bold">
+        <span className="h-1.5 w-1.5 rounded-full bg-amber-500 inline-block" />
+        Pending
+      </Badge>
+    );
+  return (
+    <Badge variant="outline" className="border-destructive/40 text-destructive bg-destructive/10 gap-1 uppercase tracking-wide text-[10px] font-bold">
+      <span className="h-1.5 w-1.5 rounded-full bg-destructive inline-block" />
+      Rejected
+    </Badge>
+  );
+};
+
+// ─── Type Badge ────────────────────────────────────────────────
+const TypeBadge = ({ type }: { type: AppEvent["type"] }) => (
+  <Badge
+    variant="secondary"
+    className="uppercase tracking-wide text-[10px] font-bold text-muted-foreground bg-muted border border-border/50"
+  >
+    {type}
+  </Badge>
+);
+
+// ─── Thumbnail Cell ────────────────────────────────────────────
+const ThumbnailCell = ({ imgUrl, title }: { imgUrl: string; title: string }) => (
+  <div className="flex-shrink-0 h-10 w-14 rounded-md overflow-hidden border border-border/50 bg-muted">
+    {imgUrl ? (
+      <img src={imgUrl} alt={title} className="h-full w-full object-cover" />
+    ) : (
+      <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-slate-700 to-slate-600">
+        <CalendarIcon className="h-4 w-4 text-primary/60" />
+      </div>
+    )}
+  </div>
+);
+
+// ─── Row Actions Dropdown ─────────────────────────────────────
+const RowActions = ({
+  event,
+  isAdmin,
+  isOrganizer,
+  onApprove,
+  onReject,
+}: {
+  event: AppEvent;
+  isAdmin: boolean;
+  isOrganizer: boolean;
+  onApprove: (id: number) => void;
+  onReject: (id: number) => void;
+}) => {
+  const navigate = useNavigate();
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          id={`event-actions-${event.id}`}
+          variant="ghost"
+          size="sm"
+          className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+        >
+          <span className="sr-only">Open menu</span>
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-44">
+        <DropdownMenuLabel className="text-xs text-muted-foreground">Actions</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+
+        {/* View Details */}
+        <DropdownMenuItem
+          id={`view-event-${event.id}`}
+          className="gap-2 cursor-pointer"
+          onClick={() => navigate(`/dashboard/directories/${event.id}`)}
+        >
+          <Eye className="h-3.5 w-3.5" />
+          View Details
+        </DropdownMenuItem>
+
+        {/* Edit — Admin or Organizer only */}
+        {(isAdmin || isOrganizer) && (
+          <DropdownMenuItem
+            id={`edit-event-${event.id}`}
+            className="gap-2 cursor-pointer"
+            onClick={() => navigate(`/dashboard/directories/${event.id}/edit`)}
+          >
+            <Pencil className="h-3.5 w-3.5" />
+            Edit
+          </DropdownMenuItem>
+        )}
+
+        {/* Approve / Reject — Admin only */}
+        {isAdmin && event.status !== "approved" && (
+          <DropdownMenuItem
+            id={`approve-event-${event.id}`}
+            className="gap-2 cursor-pointer text-emerald-500 focus:text-emerald-500 focus:bg-emerald-500/10"
+            onClick={() => onApprove(event.id)}
+          >
+            <CheckCircle className="h-3.5 w-3.5" />
+            Approve
+          </DropdownMenuItem>
+        )}
+        {isAdmin && event.status !== "rejected" && (
+          <DropdownMenuItem
+            id={`reject-event-${event.id}`}
+            className="gap-2 cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
+            onClick={() => onReject(event.id)}
+          >
+            <XCircle className="h-3.5 w-3.5" />
+            Reject
+          </DropdownMenuItem>
+        )}
+
+        {/* Delete — Admin only */}
+        {isAdmin && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              id={`delete-event-${event.id}`}
+              className="gap-2 cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              Delete
+            </DropdownMenuItem>
+          </>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
+
+// ─── Main Component ────────────────────────────────────────────
 export const EventList = () => {
   const { user } = useUserStore();
-  const { events, isLoading, error, fetchEvents, filterEvents, pagination } = useEventStore();
+  const { events, isLoading, error, fetchEvents, filterEvents, approveEvent, rejectEvent, pagination } = useEventStore();
 
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const [filtersVisible, setFiltersVisible] = useState(true);
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(8);
+  const [limit, setLimit] = useState(10);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const canCreate = user?.role === "ADMIN" || user?.role === "ORGANIZER";
+  const isAdmin = user?.role === "ADMIN";
+  const isOrganizer = user?.role === "ORGANIZER";
+  const canCreate = isAdmin || isOrganizer;
 
   // ─── Filter Computation ──────────────────────────────────────
   const hasActiveFilters =
@@ -72,7 +228,7 @@ export const EventList = () => {
   const handleFilterChange = (key: keyof FilterState, value: string) => {
     const newFilters = { ...filters, [key]: value } as FilterState;
     setFilters(newFilters);
-    setPage(1); // Reset page on filter change
+    setPage(1);
 
     if (key === "search") {
       if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -97,13 +253,21 @@ export const EventList = () => {
 
   const handleLimitChange = (newLimit: number) => {
     setLimit(newLimit);
-    setPage(1); // Reset page when limit changes
+    setPage(1);
     if (hasActiveFilters) {
       applyBackendFilters(filters, 1, newLimit);
     }
   };
 
-  // ─── Client-side date range filter (applied after backend results) ─
+  const handleApprove = async (id: number) => {
+    try { await approveEvent(id); } catch { /* handled in store */ }
+  };
+
+  const handleReject = async (id: number) => {
+    try { await rejectEvent(id); } catch { /* handled in store */ }
+  };
+
+  // Client-side date range filter (applied after backend results)
   const displayedEvents = events.filter((event) => {
     if (filters.dateRange === "all") return true;
     const now = new Date();
@@ -124,7 +288,7 @@ export const EventList = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* ── Header ─────────────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Event Directories</h1>
@@ -156,7 +320,7 @@ export const EventList = () => {
         </div>
       </div>
 
-      {/* Filter Bar */}
+      {/* ── Filter Bar ─────────────────────────────────────────── */}
       {filtersVisible && (
         <Card>
           <CardContent className="p-4">
@@ -242,7 +406,7 @@ export const EventList = () => {
         </Card>
       )}
 
-      {/* Error */}
+      {/* ── Error ──────────────────────────────────────────────── */}
       {error && (
         <div className="flex items-center gap-3 p-4 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive">
           <AlertCircle className="w-5 h-5 shrink-0" />
@@ -250,14 +414,14 @@ export const EventList = () => {
         </div>
       )}
 
-      {/* Results count */}
+      {/* ── Results count ─────────────────────────────────────── */}
       {!isLoading && displayedEvents.length > 0 && hasActiveFilters && (
         <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
           {displayedEvents.length} result{displayedEvents.length !== 1 ? "s" : ""} found
         </p>
       )}
 
-      {/* Empty state */}
+      {/* ── Empty State ───────────────────────────────────────── */}
       {displayedEvents.length === 0 && !error && !isLoading ? (
         <Card className="text-center py-20 border-dashed">
           <CardContent>
@@ -280,89 +444,123 @@ export const EventList = () => {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {displayedEvents.map((event) => (
-            <Link
-              key={event.id}
-              to={`/dashboard/directories/${event.id}`}
-              className="group bg-card overflow-hidden rounded-2xl border border-border/60 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-500 flex flex-col h-full relative"
-            >
-              {/* Image / Fallback Header */}
-              <div className="relative h-56 w-full overflow-hidden shrink-0">
-                {event.imgUrl ? (
-                  <>
-                    <img
-                      src={event.imgUrl}
-                      alt={event.title}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                  </>
-                ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center relative overflow-hidden bg-gradient-to-br from-slate-800 to-slate-700">
-                    <div className="absolute w-40 h-40 rounded-full border border-white/10 -top-10 -right-10" />
-                    <div className="absolute w-60 h-60 rounded-full border border-white/5 -bottom-20 -left-20" />
-                    <CalendarIcon className="w-14 h-14 relative z-10 drop-shadow-lg text-primary/70" />
-                  </div>
-                )}
-
-                {/* Status badge */}
-                <div className="absolute top-4 right-4 z-20">
-                  <Badge
-                    variant={
-                      event.status === "approved" ? "success" :
-                      event.status === "rejected" ? "destructive" : "warning"
-                    }
-                    className="text-[10px] uppercase tracking-wide backdrop-blur-sm"
+        /* ── Data Table ──────────────────────────────────────── */
+        <Card className="bg-card border-border overflow-hidden">
+          <div className="rounded-md overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/40 hover:bg-muted/40 border-b border-border">
+                  <TableHead className="w-[64px] pl-4 text-xs uppercase tracking-wider font-semibold text-muted-foreground">
+                    Thumb
+                  </TableHead>
+                  <TableHead className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
+                    Event Title
+                  </TableHead>
+                  <TableHead className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
+                    Date
+                  </TableHead>
+                  <TableHead className="text-xs uppercase tracking-wider font-semibold text-muted-foreground hidden md:table-cell">
+                    Location
+                  </TableHead>
+                  <TableHead className="text-xs uppercase tracking-wider font-semibold text-muted-foreground hidden lg:table-cell">
+                    Capacity
+                  </TableHead>
+                  <TableHead className="text-xs uppercase tracking-wider font-semibold text-muted-foreground hidden sm:table-cell">
+                    Type
+                  </TableHead>
+                  <TableHead className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
+                    Status
+                  </TableHead>
+                  <TableHead className="text-xs uppercase tracking-wider font-semibold text-muted-foreground text-right pr-4 w-[60px]">
+                    Actions
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {displayedEvents.map((event) => (
+                  <TableRow
+                    key={event.id}
+                    id={`event-row-${event.id}`}
+                    className="border-b border-border/50 hover:bg-muted/30 transition-colors group"
                   >
-                    {event.status}
-                  </Badge>
-                </div>
+                    {/* Thumbnail */}
+                    <TableCell className="pl-4 py-3">
+                      <ThumbnailCell imgUrl={event.imgUrl} title={event.title} />
+                    </TableCell>
 
-                {/* Type badge */}
-                <div className="absolute top-4 left-4 z-20">
-                  <Badge variant="secondary" className="backdrop-blur-md bg-black/60 text-yellow-300 border-0 text-[10px] font-bold">
-                    {event.type}
-                  </Badge>
-                </div>
+                    {/* Event Title */}
+                    <TableCell className="py-3 max-w-[200px]">
+                      <Link
+                        to={`/dashboard/directories/${event.id}`}
+                        className="font-semibold text-sm text-foreground hover:text-primary transition-colors line-clamp-1 group-hover:underline underline-offset-2"
+                      >
+                        {event.title}
+                      </Link>
+                      {/* Show location on small screens inline */}
+                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1 md:hidden">
+                        {event.location}
+                      </p>
+                    </TableCell>
 
-                {/* Bottom accent line */}
-                <div className="absolute bottom-0 left-0 right-0 h-1 z-20 bg-gradient-to-r from-primary to-primary/50" />
-              </div>
+                    {/* Date */}
+                    <TableCell className="py-3 whitespace-nowrap">
+                      <span className="text-sm text-muted-foreground">
+                        {new Date(event.startTime).toLocaleDateString("en-US", {
+                          weekday: "short",
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                      </span>
+                    </TableCell>
 
-              {/* Content */}
-              <div className="p-6 flex-1 flex flex-col">
-                <h3 className="text-xl font-bold mb-4 line-clamp-1 text-foreground group-hover:text-primary transition-colors">
-                  {event.title}
-                </h3>
+                    {/* Location */}
+                    <TableCell className="py-3 max-w-[160px] hidden md:table-cell">
+                      <span className="text-sm text-muted-foreground line-clamp-1">{event.location}</span>
+                    </TableCell>
 
-                <div className="space-y-2 mt-auto">
-                  <div className="flex items-center text-sm text-muted-foreground bg-muted/40 p-2.5 rounded-xl border border-border/40">
-                    <CalendarIcon className="w-4 h-4 mr-3 text-primary/60 shrink-0" />
-                    {new Date(event.startTime).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}
-                  </div>
-                  <div className="flex items-center text-sm text-muted-foreground bg-muted/40 p-2.5 rounded-xl border border-border/40">
-                    <MapPin className="w-4 h-4 mr-3 text-primary/60 shrink-0" />
-                    <span className="line-clamp-1">{event.location}</span>
-                  </div>
-                  <div className="flex items-center text-sm text-muted-foreground bg-muted/40 p-2.5 rounded-xl border border-border/40">
-                    <Users className="w-4 h-4 mr-3 text-primary/60 shrink-0" />
-                    {event.capacity} Attendees
-                  </div>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
+                    {/* Capacity */}
+                    <TableCell className="py-3 hidden lg:table-cell">
+                      <span className="text-sm text-muted-foreground tabular-nums">
+                        {event.capacity.toLocaleString()} Attendees
+                      </span>
+                    </TableCell>
+
+                    {/* Type */}
+                    <TableCell className="py-3 hidden sm:table-cell">
+                      <TypeBadge type={event.type} />
+                    </TableCell>
+
+                    {/* Status */}
+                    <TableCell className="py-3">
+                      <StatusBadge status={event.status} />
+                    </TableCell>
+
+                    {/* Actions */}
+                    <TableCell className="py-3 pr-4 text-right">
+                      <RowActions
+                        event={event}
+                        isAdmin={isAdmin}
+                        isOrganizer={isOrganizer}
+                        onApprove={handleApprove}
+                        onReject={handleReject}
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </Card>
       )}
 
-      {/* Pagination component */}
+      {/* ── Pagination ────────────────────────────────────────── */}
       {!isLoading && displayedEvents.length > 0 && pagination && (
-        <DataTablePagination 
+        <DataTablePagination
           meta={pagination}
           onPageChange={handlePageChange}
           onLimitChange={handleLimitChange}
-          defaultLimit={8}
+          defaultLimit={10}
         />
       )}
     </div>
