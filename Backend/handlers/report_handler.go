@@ -10,7 +10,7 @@ import (
 	"github.com/mubarik/EVENT_MANBAGEMENT_SYSTEM/services"
 )
 
-// ReportHandler handles all /admin/reports requests.
+// ReportHandler handles all /api/admin/reports requests.
 type ReportHandler struct {
 	Svc *services.ReportService
 }
@@ -26,10 +26,7 @@ func NewReportHandler() *ReportHandler {
 func (h *ReportHandler) GetReport(c *gin.Context) {
 	var q dtos.ReportQueryDTO
 	if err := c.ShouldBindQuery(&q); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"success": false,
-			"message": err.Error(),
-		})
+		fail(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -40,10 +37,7 @@ func (h *ReportHandler) GetReport(c *gin.Context) {
 
 	httpStatus, data, ctx, err := h.Svc.GetReport(q)
 	if err != nil {
-		c.JSON(httpStatus, gin.H{
-			"success": false,
-			"message": err.Error(),
-		})
+		fail(c, httpStatus, err.Error())
 		return
 	}
 

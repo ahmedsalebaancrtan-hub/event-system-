@@ -67,10 +67,35 @@ export const Dashboard = () => {
     { label: "Seminar", value: stats.seminars, color: "hsl(var(--border))" },
   ];
 
-  const statusBadge = (status: string) => {
-    if (status === "approved") return <Badge variant="outline" className="border-green-500/50 text-green-500 bg-green-500/10">Approved</Badge>;
-    if (status === "pending") return <Badge variant="outline" className="border-yellow-500/50 text-yellow-500 bg-yellow-500/10">Pending</Badge>;
-    return <Badge variant="outline" className="border-destructive/50 text-destructive bg-destructive/10">Rejected</Badge>;
+  const StatusBadge = ({ status }: { status: string }) => {
+    if (status === "approved") {
+      return (
+        <Badge
+          variant="outline"
+          className="border-emerald-500/40 text-emerald-500 bg-emerald-500/10 uppercase tracking-wide text-[10px] font-bold"
+        >
+          Approved
+        </Badge>
+      );
+    }
+    if (status === "pending") {
+      return (
+        <Badge
+          variant="outline"
+          className="border-amber-500/40 text-amber-500 bg-amber-500/10 uppercase tracking-wide text-[10px] font-bold"
+        >
+          Pending
+        </Badge>
+      );
+    }
+    return (
+      <Badge
+        variant="outline"
+        className="border-destructive/40 text-destructive bg-destructive/10 uppercase tracking-wide text-[10px] font-bold"
+      >
+        Rejected
+      </Badge>
+    );
   };
 
   const exportSummaryCSV = () => {
@@ -276,7 +301,7 @@ export const Dashboard = () => {
                           </span>
                         </div>
                       </div>
-                      <div>{statusBadge(e.status)}</div>
+                      <div><StatusBadge status={e.status} /></div>
                     </div>
                   ))}
                 </div>

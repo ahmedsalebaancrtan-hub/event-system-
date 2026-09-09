@@ -18,21 +18,19 @@ type RegisterHandler struct {
 func NewRegisterHandler() *RegisterHandler {
 	repo := repository.NewRegisterRepo(infra.DB)
 	svc := services.NewRegisterService(repo)
-
 	return &RegisterHandler{Service: svc}
 }
 
 func (h *RegisterHandler) PublicRegister(c *gin.Context) {
 	var body dtos.PublicRegisterDTO
-
 	if err := c.ShouldBindJSON(&body); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": err.Error()})
+		fail(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	httpStatus, registrationStatus, err := h.Service.PublicRegister(&body)
 	if err != nil {
-		c.JSON(httpStatus, gin.H{"success": false, "message": err.Error()})
+		fail(c, httpStatus, err.Error())
 		return
 	}
 
@@ -49,69 +47,54 @@ func (h *RegisterHandler) PublicRegister(c *gin.Context) {
 }
 
 func (h *RegisterHandler) ReviewRegistration(c *gin.Context) {
-	idStr := c.Param("id")
-	id, err := strconv.ParseUint(idStr, 10, 64)
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": "invalid registration id"})
+		fail(c, http.StatusBadRequest, "invalid registration id")
 		return
 	}
 
 	var body dtos.ReviewRegistrationDTO
 	if err := c.ShouldBindJSON(&body); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": err.Error()})
+		fail(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	status, err := h.Service.ReviewRegistration(uint(id), &body)
 	if err != nil {
-		c.JSON(status, gin.H{"success": false, "message": err.Error()})
+		fail(c, status, err.Error())
 		return
 	}
-
-	c.JSON(status, gin.H{
-		"success": true,
-		"message": "registration reviewed successfully",
-	})
+	ok(c, status, "registration reviewed successfully", nil)
 }
 
 func (h *RegisterHandler) GetPendingRegistrations(c *gin.Context) {
 	status, data, err := h.Service.GetPendingRegistrations()
 	if err != nil {
-		c.JSON(status, gin.H{"success": false, "message": err.Error()})
+		fail(c, status, err.Error())
 		return
 	}
-
-	c.JSON(status, gin.H{
-		"success": true,
-		"message": "pending registrations fetched",
-		"data":    data,
-	})
+	ok(c, status, "pending registrations fetched", data)
 }
 
 func (h *RegisterHandler) GetApprovedRegistrations(c *gin.Context) {
 	status, data, err := h.Service.GetApprovedRegistrations()
 	if err != nil {
-		c.JSON(status, gin.H{"success": false, "message": err.Error()})
+		fail(c, status, err.Error())
 		return
 	}
-
-	c.JSON(status, gin.H{
-		"success": true,
-		"message": "approved registrations fetched",
-		"data":    data,
-	})
+	ok(c, status, "approved registrations fetched", data)
 }
 
 func (h *RegisterHandler) GetApprovedEventAttendees(c *gin.Context) {
 	eventID, err := strconv.ParseUint(c.Param("event_id"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": "invalid event id"})
+		fail(c, http.StatusBadRequest, "invalid event id")
 		return
 	}
 
 	status, data, err := h.Service.GetApprovedRegistrationsByEvent(uint(eventID))
 	if err != nil {
-		c.JSON(status, gin.H{"success": false, "message": err.Error()})
+		fail(c, status, err.Error())
 		return
 	}
 
@@ -126,61 +109,44 @@ func (h *RegisterHandler) GetApprovedEventAttendees(c *gin.Context) {
 			"status": registration.Status,
 		})
 	}
-
-	c.JSON(status, gin.H{
-		"success": true,
-		"message": "approved event attendees fetched",
-		"data":    attendees,
-	})
+	ok(c, status, "approved event attendees fetched", attendees)
 }
 
 func (h *RegisterHandler) GetApprovedEventsForCurrentGuest(c *gin.Context) {
 	emailValue, exists := c.Get("email")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"success": false, "message": "authenticated email not found"})
+		fail(c, http.StatusUnauthorized, "authenticated email not found")
 		return
 	}
 
-	email, ok := emailValue.(string)
-	if !ok || email == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{"success": false, "message": "authenticated email not found"})
+	email, ok2 := emailValue.(string)
+	if !ok2 || email == "" {
+		fail(c, http.StatusUnauthorized, "authenticated email not found")
 		return
 	}
 
 	status, data, err := h.Service.GetApprovedEventsByGuestEmail(email)
 	if err != nil {
-		c.JSON(status, gin.H{"success": false, "message": err.Error()})
+		fail(c, status, err.Error())
 		return
 	}
-
-	c.JSON(status, gin.H{
-		"success": true,
-		"message": "approved registered events fetched",
-		"data":    data,
-	})
+	ok(c, status, "approved registered events fetched", data)
 }
 
 func (h *RegisterHandler) FilterRegistrations(c *gin.Context) {
 	var filter dtos.RegistrationFilterDTO
-
 	if err := c.ShouldBindQuery(&filter); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": err.Error()})
+		fail(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	status, data, total, err := h.Service.FilterRegistrations(&filter)
 	if err != nil {
-		c.JSON(status, gin.H{"success": false, "message": err.Error()})
+		fail(c, status, err.Error())
 		return
 	}
 
 	page, limit, _ := dtos.ResolvePagination(filter.Page, filter.Limit, 10)
 	meta := dtos.BuildMeta(page, limit, total)
-
-	c.JSON(status, gin.H{
-		"success":    true,
-		"message":    "registrations filtered successfully",
-		"data":       data,
-		"pagination": meta,
-	})
+	okPaginated(c, status, "registrations filtered successfully", data, meta)
 }
