@@ -14,6 +14,7 @@ import { RegisteredEvents } from './pages/dashboard/registered';
 import { CalendarView } from './pages/dashboard/calendar';
 import { ProfileSettings } from './pages/dashboard/profile';
 import { UsersAndStaff } from './pages/dashboard/users';
+import { Reports } from './pages/dashboard/Reports';
 import { RootLayout } from './components/RootLayout';
 
 export const routes = createBrowserRouter([
@@ -76,6 +77,10 @@ export const routes = createBrowserRouter([
           {
             path: "users",
             element: <UsersAndStaff />
+          },
+          {
+            path: "reports",
+            element: <Reports />
           },
           {
             path: "directories/create",

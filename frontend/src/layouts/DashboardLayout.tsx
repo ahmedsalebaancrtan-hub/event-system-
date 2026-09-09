@@ -14,7 +14,8 @@ import {
   Plus,
   Star,
   LayoutDashboard,
-  ChevronDown
+  ChevronDown,
+  BarChart3
 } from "lucide-react";
 import { useUserStore } from "../store/user-store";
 import { useEventStore } from "../store/event-store";
@@ -48,6 +49,7 @@ const NAV_ITEMS: NavItem[] = [
   { name: "Event Directories", href: "/dashboard/directories", icon: FolderOpen },
   { name: "Profile Settings", href: "/dashboard/profile", icon: Settings },
   { name: "User & Staff", href: "/dashboard/users", icon: Users, adminOnly: true },
+  { name: "Reports & Analytics", href: "/dashboard/reports", icon: BarChart3, staffOnly: true },
 ];
 
 export const DashboardLayout = () => {

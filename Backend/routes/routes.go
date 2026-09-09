@@ -12,6 +12,7 @@ func RegisterRoute(r *gin.Engine) {
 	UserHandler := handlers.RegisterUserHandler()
 	EventHandler := handlers.RegisterEventHandler()
 	RegisterHandler := handlers.NewRegisterHandler()
+	ReportHandler := handlers.NewReportHandler()
 	UserGroup := ApiGroup.Group("/users")
 
 	{
@@ -61,6 +62,13 @@ func RegisterRoute(r *gin.Engine) {
 	{
 		legacyRegisterGroup.GET("/events/:event_id/users", RegisterHandler.GetApprovedEventAttendees)
 		legacyRegisterGroup.GET("/users/:id/events", RegisterHandler.GetApprovedEventsForCurrentGuest)
+	}
+
+	// ── Reports & Analytics ────────────────────────────────────────────────
+	reportGroup := ApiGroup.Group("/admin/reports")
+	reportGroup.Use(middlewares.Authenticated(), middlewares.RequiredRole("ADMIN", "STAFF"))
+	{
+		reportGroup.GET("", ReportHandler.GetReport)
 	}
 
 }
