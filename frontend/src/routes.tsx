@@ -3,8 +3,8 @@ import { Dashboard } from './pages/dashboard';
 import { Register } from './pages/authentication/register';
 import { Login } from './pages/authentication/login';
 import { ForgotPassword } from './pages/authentication/forgot-password';
-import { DashboardLayout } from './layouts/DashboardLayout';
-import { PublicLayout } from './layouts/PublicLayout';
+import { DashboardLayout } from './components/common/DashboardLayout';
+import { PublicLayout } from './components/common/PublicLayout';
 import { LandingPage } from './pages/public/LandingPage';
 import { EventList } from './pages/dashboard/events';
 import { CreateEvent } from './pages/dashboard/events/create';
@@ -15,7 +15,7 @@ import { CalendarView } from './pages/dashboard/calendar';
 import { ProfileSettings } from './pages/dashboard/profile';
 import { UsersAndStaff } from './pages/dashboard/users';
 import { Reports } from './pages/dashboard/Reports';
-import { RootLayout } from './components/RootLayout';
+import { RootLayout } from './components/common/RootLayout';
 
 export const routes = createBrowserRouter([
   {

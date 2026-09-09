@@ -1,4 +1,4 @@
-import { ForgotPasswordForm } from "./components/ForgotPasswordForm";
+import { ForgotPasswordForm } from "../../features/auth/ForgotPasswordForm";
 import { Star } from "lucide-react";
 
 export const ForgotPassword = () => {

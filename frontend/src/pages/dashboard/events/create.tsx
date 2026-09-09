@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { ArrowLeft, Save, AlertCircle } from "lucide-react";
 import type { CreateEventDTO } from "../../../types/event";
-import { api } from "../../../lib/api";
+import { api } from "../../../services/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";

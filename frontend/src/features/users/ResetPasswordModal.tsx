@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Mail, CheckCircle, AlertCircle } from "lucide-react";
-import { api } from "@/lib/api";
+import { api } from "@/services/api";
 import type { User } from "@/types/user";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

@@ -10,9 +10,9 @@ import { useRegisterStore } from "../../store/register-store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { MiniCalendar } from "./components/MiniCalendar";
-import { DonutChart } from "./components/DonutChart";
-import { downloadCSV, downloadPDF, isoDate, titleCase, capitalize, slugify } from "../../lib/export-utils";
+import { MiniCalendar } from "../../features/dashboard/MiniCalendar";
+import { DonutChart } from "../../features/dashboard/DonutChart";
+import { downloadCSV, downloadPDF, isoDate, titleCase, capitalize, slugify } from "../../services/export-utils";
 
 
 

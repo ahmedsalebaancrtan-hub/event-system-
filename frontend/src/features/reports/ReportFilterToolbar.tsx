@@ -13,7 +13,7 @@ import type {
   ReportFilterState,
   ReportType,
   BasicEvent,
-} from "../../../types/report";
+} from "../../types/report";
 
 interface ReportFilterToolbarProps {
   filters: ReportFilterState;

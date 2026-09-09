@@ -4,11 +4,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 
 import { useReports } from "../../hooks/useReports";
-import { ReportFilterToolbar } from "./reports/ReportFilterToolbar";
-import { ReportSummaryCards } from "./reports/ReportSummaryCards";
-import { ReportTrendChart } from "./reports/ReportTrendChart";
-import { ReportPreviewTable } from "./reports/ReportPreviewTable";
-import { ExportActions } from "./reports/ExportActions";
+import { ReportFilterToolbar } from "../../features/reports/ReportFilterToolbar";
+import { ReportSummaryCards } from "../../features/reports/ReportSummaryCards";
+import { ReportTrendChart } from "../../features/reports/ReportTrendChart";
+import { ReportPreviewTable } from "../../features/reports/ReportPreviewTable";
+import { ExportActions } from "../../features/reports/ExportActions";
 
 import {
   downloadCSV,
@@ -16,7 +16,7 @@ import {
   capitalize,
   titleCase,
   isoDate,
-} from "../../lib/export-utils";
+} from "../../services/export-utils";
 import type {
   AttendeeReportRow,
   EventReportRow,

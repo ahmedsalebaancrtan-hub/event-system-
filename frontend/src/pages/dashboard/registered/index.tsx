@@ -13,9 +13,9 @@ import {
   Download,
   Filter,
 } from "lucide-react";
-import { api, getApiErrorMessage } from "../../../lib/api";
+import { api, getApiErrorMessage } from "../../../services/api";
 import type { PendingRegistration, ReviewRegistrationPayload } from "../../../types/register";
-import { downloadCSV, downloadPDF, isoDate, capitalize, titleCase } from "../../../lib/export-utils";
+import { downloadCSV, downloadPDF, isoDate, capitalize, titleCase } from "../../../services/export-utils";
 import {
   Dialog,
   DialogContent,
@@ -41,7 +41,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { cn } from "@/lib/utils";
 import { useEventStore } from "../../../store/event-store";
 import type { PaginationMeta } from "../../../types/event";
-import { DataTablePagination } from "../../../components/pagination/DataTablePagination";
+import { DataTablePagination } from "../../../components/common/DataTablePagination";
 
 // ─── Types ────────────────────────────────────────────────────
 interface RejectModalState {

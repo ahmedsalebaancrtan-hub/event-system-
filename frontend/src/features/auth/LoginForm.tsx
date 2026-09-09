@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
-import { useUserStore } from "../../../store/user-store";
-import { api, getNetworkErrorMessage } from "../../../lib/api";
+import { useUserStore } from "../../store/user-store";
+import { api, getNetworkErrorMessage } from "../../services/api";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

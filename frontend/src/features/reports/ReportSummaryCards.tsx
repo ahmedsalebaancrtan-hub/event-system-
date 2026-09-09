@@ -8,7 +8,7 @@ import {
   Users,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import type { FilterContext, BasicEvent } from "../../../types/report";
+import type { FilterContext, BasicEvent } from "../../types/report";
 
 interface ReportSummaryCardsProps {
   filterContext: FilterContext;

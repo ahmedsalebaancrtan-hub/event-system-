@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Mail, Lock, User, ShieldCheck, ArrowRight } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
-import { api, getNetworkErrorMessage } from "../../../lib/api";
+import { api, getNetworkErrorMessage } from "../../services/api";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

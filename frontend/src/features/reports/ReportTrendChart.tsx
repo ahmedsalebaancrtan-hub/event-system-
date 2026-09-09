@@ -1,5 +1,5 @@
 import { Activity } from "lucide-react";
-import type { TrendReportRow } from "../../../types/report";
+import type { TrendReportRow } from "../../types/report";
 
 interface ReportTrendChartProps {
   data: TrendReportRow[];

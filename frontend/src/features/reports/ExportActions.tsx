@@ -1,6 +1,6 @@
 import { Download, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { FilterContext, ReportDataRow } from "../../../types/report";
+import type { FilterContext, ReportDataRow } from "../../types/report";
 
 interface ExportActionsProps {
   reportData: ReportDataRow[];

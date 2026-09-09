@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Mail, User, Phone, Calendar, MapPin, CheckCircle, AlertCircle } from "lucide-react";
-import { publicApi } from "../lib/api";
-import type { AppEvent } from "../types/event";
-import type { PublicRegisterPayload } from "../types/register";
+import { publicApi } from "../../services/api";
+import type { AppEvent } from "../../types/event";
+import type { PublicRegisterPayload } from "../../types/register";
 import {
   Dialog,
   DialogContent,

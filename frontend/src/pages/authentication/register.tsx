@@ -1,4 +1,4 @@
-import { RegisterForm } from "./components/RegisterForm";
+import { RegisterForm } from "../../features/auth/RegisterForm";
 import { Star } from "lucide-react";
 
 export const Register = () => {

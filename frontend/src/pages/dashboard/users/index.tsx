@@ -2,17 +2,17 @@ import { useEffect, useState, useMemo } from "react";
 import {
   Users, Search, UserCheck, UserX, RefreshCw, X, AlertCircle, UserPlus
 } from "lucide-react";
-import { api } from "../../../lib/api";
+import { api } from "../../../services/api";
 import type { User } from "../../../types/user";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { UserCard } from "./components/UserCard";
-import { ResetPasswordModal, type ResetModalState } from "./components/ResetPasswordModal";
-import { CreateUserModal } from "./components/CreateUserModal";
+import { UserCard } from "../../../features/users/UserCard";
+import { ResetPasswordModal, type ResetModalState } from "../../../features/users/ResetPasswordModal";
+import { CreateUserModal } from "../../../features/users/CreateUserModal";
 import type { PaginationMeta } from "../../../types/event";
-import { DataTablePagination } from "../../../components/pagination/DataTablePagination";
+import { DataTablePagination } from "../../../components/common/DataTablePagination";
 
 // ─── Types ────────────────────────────────────────────────────
 type Role = "ALL" | "ADMIN" | "ORGANIZER" | "STAFF";

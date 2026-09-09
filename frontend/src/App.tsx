@@ -1,6 +1,6 @@
 import { RouterProvider } from 'react-router-dom'
 import { routes } from './routes'
-import { ThemeProvider } from './components/theme-provider'
+import { ThemeProvider } from './components/common/ThemeProvider'
 
 const App = () => {
   return (

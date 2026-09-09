@@ -17,9 +17,9 @@ import {
   ChevronDown,
   BarChart3
 } from "lucide-react";
-import { useUserStore } from "../store/user-store";
-import { useEventStore } from "../store/event-store";
-import { api, hasAuthTokens } from "../lib/api";
+import { useUserStore } from "../../store/user-store";
+import { useEventStore } from "../../store/event-store";
+import { api, hasAuthTokens } from "../../services/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -31,7 +31,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ModeToggle } from "@/components/mode-toggle";
+import { ModeToggle } from "@/components/common/ModeToggle";
 import { cn } from "@/lib/utils";
 
 interface NavItem {

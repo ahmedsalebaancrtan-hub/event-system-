@@ -1,8 +1,8 @@
 import React, { useState, useRef } from "react";
 import { ShieldCheck } from "lucide-react";
-import { useUserStore } from "../../../store/user-store";
-import { api, getNetworkErrorMessage } from "../../../lib/api";
-import type { LoginResponse } from "../../../types/user";
+import { useUserStore } from "../../store/user-store";
+import { api, getNetworkErrorMessage } from "../../services/api";
+import type { LoginResponse } from "../../types/user";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";

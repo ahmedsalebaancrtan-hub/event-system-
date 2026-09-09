@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { CheckCircle, AlertCircle, UserPlus } from "lucide-react";
-import { api } from "@/lib/api";
+import { api } from "@/services/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";

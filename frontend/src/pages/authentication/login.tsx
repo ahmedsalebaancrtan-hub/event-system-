@@ -1,9 +1,9 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUserStore } from "../../store/user-store";
-import { hasAuthTokens } from "../../lib/api";
-import { LoginForm } from "./components/LoginForm";
-import { TwoFactorVerification } from "./components/TwoFactorVerification";
+import { hasAuthTokens } from "../../services/api";
+import { LoginForm } from "../../features/auth/LoginForm";
+import { TwoFactorVerification } from "../../features/auth/TwoFactorVerification";
 import { Star } from "lucide-react";
 
 export const Login = () => {

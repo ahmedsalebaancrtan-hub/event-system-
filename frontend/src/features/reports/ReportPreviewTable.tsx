@@ -7,12 +7,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { capitalize, titleCase } from "../../../lib/export-utils";
+import { capitalize, titleCase } from "../../services/export-utils";
 import type {
   ReportDataRow,
   EventReportRow,
   AttendeeReportRow,
-} from "../../../types/report";
+} from "../../types/report";
 
 interface ReportPreviewTableProps {
   type: string;

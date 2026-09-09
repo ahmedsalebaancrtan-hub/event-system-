@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Calendar, MapPin, Sparkles, AlertCircle } from "lucide-react";
-import { publicApi } from "../../lib/api";
-import { RegistrationModal } from "../../components/RegistrationModal";
+import { publicApi } from "../../services/api";
+import { RegistrationModal } from "../../features/events/RegistrationModal";
 import type { AppEvent } from "../../types/event";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

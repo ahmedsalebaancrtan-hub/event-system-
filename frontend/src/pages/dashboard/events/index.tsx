@@ -21,7 +21,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { DataTablePagination } from "../../../components/pagination/DataTablePagination";
+import { DataTablePagination } from "../../../components/common/DataTablePagination";
 import type { AppEvent } from "../../../types/event";
 
 // ─── Helpers ──────────────────────────────────────────────────
